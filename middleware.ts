@@ -54,6 +54,30 @@ export async function middleware(request: NextRequest) {
       redirectUrl.searchParams.set('redirectTo', pathname)
       return NextResponse.redirect(redirectUrl)
     }
+
+    // Проверяем завершён ли онбординг (есть ли companionName)
+    // Если нет — редирект на /onboarding
+    const { data: dbUser } = await supabase
+      .from('users')
+      .select('companion_name')
+      .eq('id', user.id)
+      .single()
+
+    // Если companionName пустой — показать онбординг
+    if (!dbUser || !dbUser.companion_name || dbUser.companion_name.trim() === '') {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/onboarding'
+      return NextResponse.redirect(redirectUrl)
+    }
+  }
+
+  // Защищённый роут /onboarding — требуется auth но не требуется companionName
+  if (pathname === '/onboarding') {
+    if (!user) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/login'
+      return NextResponse.redirect(redirectUrl)
+    }
   }
 
   // Роуты auth — если пользователь уже залогинен, редирект на dashboard

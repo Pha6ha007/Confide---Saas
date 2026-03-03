@@ -239,25 +239,136 @@ confide/
 
 ---
 
-### Следующие шаги — Phase 1 Week 3-4
+## 🎉 [2026-03-03] Phase 1 Week 3-4 ЗАВЕРШЕНА
 
-**Week 3-4: AI Core**
-- [ ] Groq API integration (llama-3.3-70b-versatile)
-- [ ] Chat UI компонент (input, message bubbles, typing indicator)
-- [ ] RAG система: PDF → chunking → embeddings → Pinecone
-- [ ] Первый агент: Anxiety Agent (CBT/ACT/DBT)
-- [ ] Retrieval из RAG при каждом запросе
-- [ ] Real-time streaming responses
+**Week 3-4: AI Core** — 100% ✅
 
-**Week 5: Memory**
-- [ ] Session summary после разговора
-- [ ] Memory Agent — обновление user_profile
-- [ ] Загрузка профиля в system prompt
+### AI Integration
+- ✅ Groq API integration (llama-3.3-70b-versatile)
+- ✅ Chat UI компонент (input, message bubbles, typing indicator)
+- ✅ RAG система: PDF → chunking → embeddings → Pinecone
+- ✅ Первый агент: Anxiety Agent (CBT/ACT/DBT)
+- ✅ Retrieval из RAG при каждом запросе
+- ✅ Real-time streaming responses
 
-**Week 6: Crisis + Security**
-- [ ] Crisis Detection Agent (hardcoded protocol)
-- [ ] Rate limiting на API
-- [ ] Input validation (Zod)
+---
+
+## 🎉 [2026-03-03] Phase 1 Week 5 ЗАВЕРШЕНА
+
+**Week 5: Memory** — 100% ✅
+
+### Memory System
+- ✅ Session summary после разговора
+- ✅ Memory Agent — обновление user_profile
+- ✅ Загрузка профиля в system prompt
+- ✅ Семантический поиск по истории
+
+---
+
+## 🎉 [2026-03-03] Phase 1 Week 6 ЗАВЕРШЕНА
+
+**Week 6: Crisis + Security** — 100% ✅
+
+### Crisis Detection & Security
+- ✅ Crisis Detection Agent (hardcoded protocol)
+- ✅ Rate limiting на API
+- ✅ Input validation (Zod)
+
+---
+
+## [2026-03-03] Анализ конкурентов и стратегия
+
+### Competitor Analysis Completed
+
+**Проанализировали главных конкурентов:**
+- ✅ Wysa ($75/год) — FDA approved, но нет долгосрочной памяти
+- ✅ Woebot (бесплатно) — только текст, сбрасывает контекст
+- ✅ Replika ($19/мес) — 3D аватар, но нет психологической базы
+- ✅ Youper ($89/год) — mood tracking, поверхностные советы
+- ✅ BetterHelp ($60-90/нед) — живые терапевты, дорого
+
+### Наши УТП определены
+
+1. Долгосрочная живая память (эволюция отношений)
+2. RAG база знаний (реальные психологические методики)
+3. Уникальный голос для каждого пользователя
+4. Специализированные агенты
+5. Цена $19/мес (в 10× дешевле BetterHelp)
+6. Crisis detection с первого дня
+
+### Что берём у конкурентов
+
+**От Woebot:**
+- Утренние check-ins ("как ты сегодня?")
+- Mood score 1-10 перед сессией
+
+**От Youper:**
+- График настроения с визуализацией
+
+**От Wysa:**
+- Дыхательные упражнения
+- Marketplace живых психологов (v2.0)
+
+**От Replika:**
+- 3D аватар опционально (v2.0+)
+
+### Дизайн-направление определено
+
+**Стиль:** Тёплый личный дневник (НЕ игровой, НЕ корпоративный)
+
+**Референсы:**
+- Notion (чистота, минимализм)
+- Linear (плавные анимации)
+- Молескин (тёплый, личный)
+- Apple Health (доверие)
+
+**Палитра:**
+- Primary: #6366F1 (indigo — доверие)
+- Warm: #F59E0B (amber — тепло)
+- Background: #FAFAF9 (кремовый)
+
+**Шрифты:**
+- Instrument Serif (заголовки)
+- Inter (основной текст)
+
+### Мобильная стратегия
+
+**Roadmap:**
+1. Веб (сейчас) → Next.js responsive
+2. PWA (Phase 2) → next-pwa, push notifications, offline mode
+3. React Native (v2.0+) → iOS + Android после PMF
+
+**Почему PWA сначала:**
+- Одна кодовая база
+- 0% комиссий App Store/Google Play
+- Мгновенные обновления
+- SEO работает
+
+### Обновления в документации
+
+**CLAUDE.md:**
+- ✅ Раздел "Анализ конкурентов и наши УТП" добавлен
+- ✅ Раздел "Дизайн-направление" добавлен
+- ✅ Мобильная стратегия в "Технический стек"
+- ✅ Фичи от конкурентов в Фазы разработки
+- ✅ PWA добавлен в стек (next-pwa)
+
+**Confide_Project_Documentation.md:**
+- ✅ Раздел "Анализ конкурентов и наши УТП" добавлен
+- ✅ Мобильная стратегия добавлена
+- ✅ Нумерация разделов обновлена
+- ✅ Paddle вместо Stripe в таблице стека
+
+**Prisma schema:**
+- ✅ Модель Diary уже существует (добавлена ранее)
+
+### Следующие шаги — Phase 1 Week 7-8
+
+**Week 7-8: Monetization**
+- [ ] Paddle subscriptions (Free / Pro / Premium)
+- [ ] Paddle webhooks обработка
+- [ ] Customer portal
+- [ ] Email онбординг через Resend
 
 ---
 

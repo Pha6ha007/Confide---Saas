@@ -21,14 +21,20 @@ model User {
   createdAt       DateTime @default(now()) @map("created_at")
   plan            String   @default("free") // free | pro | premium
   voiceId         String?  @map("voice_id")
-  companionName   String   @default("Alex") @map("companion_name")
+  companionName   String   @default("") @map("companion_name")
   companionGender String?  @map("companion_gender") // male | female
   language        String   @default("en") // en | ru
+
+  // User profile fields
+  preferredName   String?  @map("preferred_name") // как обращаться
+  ageGroup        String?  @map("age_group") // 18-25 | 26-35 | 36-45 | 45+
+  userGender      String?  @map("user_gender") // male | female | not_specified
 
   profile        UserProfile?
   sessions       Session[]
   messages       Message[]
   journalEntries JournalEntry[]
+  diaries        Diary[]
   subscription   Subscription?
 
   @@map("users")
@@ -136,4 +142,22 @@ model KnowledgeBase {
   pineconeId  String  @map("pinecone_id")
 
   @@map("knowledge_base")
+}
+
+// ============================================
+// DIARY (PDF библиотека)
+// ============================================
+
+model Diary {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  month      Int      // 1-12
+  year       Int      // 2026, 2027, etc
+  storageUrl String   @map("storage_url") // Supabase Storage URL
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year]) // Один дневник на пользователя в месяц
+  @@map("diaries")
 }

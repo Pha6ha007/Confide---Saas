@@ -12,15 +12,18 @@
  *     --author="David Burns"
  */
 
+// IMPORTANT: Load .env.local BEFORE any other imports
+require('dotenv').config({ path: require('path').resolve(process.cwd(), '.env.local') })
+
 import fs from 'fs'
 import path from 'path'
 import OpenAI from 'openai'
 import { getPineconeIndex, NAMESPACES, type Namespace } from '../lib/pinecone/client'
 import { PrismaClient } from '@prisma/client'
 
-// pdf-parse использует CommonJS - загружаем через require
+// pdf-parse uses CommonJS - need to import the main function
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const pdf = require('pdf-parse')
+const pdf: (dataBuffer: Buffer) => Promise<{ text: string; numpages: number }> = require('pdf-parse')
 
 // Инициализация клиентов
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
@@ -37,6 +40,7 @@ interface ChunkData {
 
 /**
  * Парсинг аргументов командной строки
+ * Улучшенная версия - корректно обрабатывает пробелы, апострофы, и специальные символы
  */
 function parseArgs(): {
   filePath: string
@@ -48,9 +52,25 @@ function parseArgs(): {
   const parsed: any = {}
 
   args.forEach((arg) => {
-    const [key, value] = arg.split('=')
-    const cleanKey = key.replace('--', '')
-    parsed[cleanKey] = value?.replace(/['"]/g, '') || ''
+    // Split only on the FIRST '=' to preserve '=' in values
+    const equalIndex = arg.indexOf('=')
+    if (equalIndex === -1) return
+
+    const key = arg.substring(0, equalIndex)
+    const value = arg.substring(equalIndex + 1)
+
+    const cleanKey = key.replace(/^-+/, '')
+
+    // Remove ONLY surrounding quotes (both " and '), preserve internal ones
+    let cleanValue = value
+    if (
+      (cleanValue.startsWith('"') && cleanValue.endsWith('"')) ||
+      (cleanValue.startsWith("'") && cleanValue.endsWith("'"))
+    ) {
+      cleanValue = cleanValue.slice(1, -1)
+    }
+
+    parsed[cleanKey] = cleanValue
   })
 
   if (!parsed.file || !parsed.namespace || !parsed.title || !parsed.author) {
@@ -173,7 +193,37 @@ async function ingestKnowledge() {
     process.exit(1)
   }
 
-  // 2. Прочитать PDF
+  // 2. Проверить дубликаты в базе данных
+  console.log('🔍 Checking for duplicates...')
+  const existingBook = await prisma.knowledgeBase.findFirst({
+    where: {
+      sourceTitle: title,
+      author: author,
+    },
+  })
+
+  if (existingBook) {
+    const count = await prisma.knowledgeBase.count({
+      where: {
+        sourceTitle: title,
+        author: author,
+      },
+    })
+    console.log(`⚠️  Warning: Book already exists in database`)
+    console.log(`   Title: ${title}`)
+    console.log(`   Author: ${author}`)
+    console.log(`   Existing chunks: ${count}`)
+    console.log(`   This will ADD duplicate vectors to Pinecone!`)
+    console.log(`   Press Ctrl+C to cancel or wait 5 seconds to continue...\n`)
+
+    // Wait 5 seconds before continuing
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+  } else {
+    console.log('   ✓ No duplicates found')
+    console.log()
+  }
+
+  // 3. Прочитать PDF
   console.log('📖 Reading PDF...')
   const dataBuffer = fs.readFileSync(filePath)
   const pdfData = await pdf(dataBuffer)
@@ -183,19 +233,19 @@ async function ingestKnowledge() {
   console.log(`   Characters: ${fullText.length.toLocaleString()}`)
   console.log()
 
-  // 3. Разбить на чанки
+  // 4. Разбить на чанки
   console.log('✂️  Chunking text...')
   const chunks = chunkText(fullText, CHUNK_SIZE, CHUNK_OVERLAP)
   console.log(`   Created ${chunks.length} chunks`)
   console.log()
 
-  // 4. Создать embeddings
+  // 5. Создать embeddings
   console.log('🔢 Creating embeddings...')
   const embeddings = await createEmbeddings(chunks.map((c) => c.text))
   console.log(`   ✓ Created ${embeddings.length} embeddings`)
   console.log()
 
-  // 5. Загрузить в Pinecone
+  // 6. Загрузить в Pinecone
   console.log('☁️  Uploading to Pinecone...')
   const index = getPineconeIndex()
 
@@ -222,7 +272,7 @@ async function ingestKnowledge() {
   console.log('   ✓ Upload complete')
   console.log()
 
-  // 6. Сохранить метаданные в БД
+  // 7. Сохранить метаданные в БД
   console.log('💾 Saving metadata to database...')
   for (const chunk of chunks) {
     await prisma.knowledgeBase.create({

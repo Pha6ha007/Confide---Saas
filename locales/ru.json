@@ -1,0 +1,37 @@
+{
+  "common": {
+    "appName": "Confide",
+    "tagline": "Разговор по душам — место где тебя всегда выслушают"
+  },
+  "auth": {
+    "login": "Войти",
+    "register": "Регистрация",
+    "email": "Email",
+    "password": "Пароль",
+    "logout": "Выйти"
+  },
+  "onboarding": {
+    "welcome": "Добро пожаловать в Confide",
+    "disclaimer": "Confide — AI-собеседник для эмоциональной поддержки, не медицинский сервис и не замена профессиональной терапии.",
+    "chooseVoice": "Выберите голос собеседника"
+  },
+  "chat": {
+    "placeholder": "Поделитесь что у вас на душе...",
+    "send": "Отправить",
+    "listening": "Слушаю...",
+    "thinking": "Думаю...",
+    "speaking": "Отвечаю..."
+  },
+  "dashboard": {
+    "chat": "Чат",
+    "journal": "Дневник",
+    "progress": "Прогресс",
+    "settings": "Настройки"
+  },
+  "plans": {
+    "free": "Бесплатно",
+    "pro": "Pro",
+    "premium": "Premium",
+    "upgrade": "Улучшить план"
+  }
+}

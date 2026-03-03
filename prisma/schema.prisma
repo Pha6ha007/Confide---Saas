@@ -1,0 +1,138 @@
+// Confide — Prisma Schema
+// Based on CLAUDE.md database architecture
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USERS & PROFILES
+// ============================================
+
+model User {
+  id              String   @id @default(uuid()) @db.Uuid
+  email           String   @unique
+  createdAt       DateTime @default(now()) @map("created_at")
+  plan            String   @default("free") // free | pro | premium
+  voiceId         String?  @map("voice_id")
+  companionName   String   @default("Alex") @map("companion_name")
+  companionGender String?  @map("companion_gender") // male | female
+  language        String   @default("en") // en | ru
+
+  profile        UserProfile?
+  sessions       Session[]
+  messages       Message[]
+  journalEntries JournalEntry[]
+  subscription   Subscription?
+
+  @@map("users")
+}
+
+model UserProfile {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @unique @map("user_id") @db.Uuid
+  communicationStyle Json?   @map("communication_style") // стиль общения, длина, юмор
+  emotionalProfile  Json?    @map("emotional_profile") // триггеры, болевые точки
+  lifeContext       Json?    @map("life_context") // ключевые люди, работа
+  patterns          Json?    // повторяющиеся сценарии
+  progress          Json?    // что улучшилось
+  whatWorked        Json?    @map("what_worked") // что давало результат
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+// ============================================
+// SESSIONS & MESSAGES
+// ============================================
+
+model Session {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  agentType String    @map("agent_type") // anxiety | family | trauma | etc
+  createdAt DateTime  @default(now()) @map("created_at")
+  endedAt   DateTime? @map("ended_at")
+  summary   String?   // GPT summary 5-7 фактов
+  moodScore Int?      @map("mood_score") // 1-10 настроение пользователя
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@map("sessions")
+}
+
+model Message {
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String   @map("session_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      String   // user | assistant
+  content   String   @db.Text
+  audioUrl  String?  @map("audio_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  isCrisis  Boolean  @default(false) @map("is_crisis") // флаг Crisis Agent
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  journalEntries JournalEntry[]
+
+  @@map("messages")
+}
+
+// ============================================
+// JOURNAL
+// ============================================
+
+model JournalEntry {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  content         String   @db.Text
+  insight         String   @db.Text
+  sourceMessageId String?  @map("source_message_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceMessage Message? @relation(fields: [sourceMessageId], references: [id], onDelete: SetNull)
+
+  @@map("journal_entries")
+}
+
+// ============================================
+// SUBSCRIPTIONS (Paddle)
+// ============================================
+
+model Subscription {
+  id                   String    @id @default(uuid()) @db.Uuid
+  userId               String    @unique @map("user_id") @db.Uuid
+  paddleCustomerId     String    @map("paddle_customer_id")
+  paddleSubscriptionId String    @map("paddle_subscription_id")
+  plan                 String    // free | pro | premium
+  status               String    // active | cancelled | expired
+  expiresAt            DateTime? @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// ============================================
+// KNOWLEDGE BASE (RAG)
+// ============================================
+
+model KnowledgeBase {
+  id          String  @id @default(uuid()) @db.Uuid
+  sourceTitle String  @map("source_title")
+  author      String
+  namespace   String  // anxiety | family | trauma | crisis
+  chunkIndex  Int     @map("chunk_index")
+  pineconeId  String  @map("pinecone_id")
+
+  @@map("knowledge_base")
+}

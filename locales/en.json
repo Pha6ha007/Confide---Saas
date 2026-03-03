@@ -1,0 +1,37 @@
+{
+  "common": {
+    "appName": "Confide",
+    "tagline": "A conversation from the heart — where you're always heard"
+  },
+  "auth": {
+    "login": "Log in",
+    "register": "Sign up",
+    "email": "Email",
+    "password": "Password",
+    "logout": "Log out"
+  },
+  "onboarding": {
+    "welcome": "Welcome to Confide",
+    "disclaimer": "Confide is an AI companion for emotional support, not a medical service or replacement for professional therapy.",
+    "chooseVoice": "Choose your companion's voice"
+  },
+  "chat": {
+    "placeholder": "Share what's on your mind...",
+    "send": "Send",
+    "listening": "Listening...",
+    "thinking": "Thinking...",
+    "speaking": "Speaking..."
+  },
+  "dashboard": {
+    "chat": "Chat",
+    "journal": "Journal",
+    "progress": "Progress",
+    "settings": "Settings"
+  },
+  "plans": {
+    "free": "Free",
+    "pro": "Pro",
+    "premium": "Premium",
+    "upgrade": "Upgrade"
+  }
+}

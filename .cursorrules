@@ -1,0 +1,172 @@
+# Confide — Cursor Rules
+# Read CLAUDE.md before making any changes!
+
+## Critical Rules
+
+1. **Security First**
+   - NEVER log user message content
+   - NEVER commit API keys or secrets
+   - ALWAYS encrypt sensitive data in DB
+   - ALWAYS validate API inputs
+
+2. **Crisis Protocol — IRON LAW**
+   - Crisis Agent ALWAYS runs parallel to main agent
+   - Crisis detection = HARDCODED response (NO LLM!)
+   - Crisis messages = immediate interruption
+   - Crisis events = logged without content
+
+3. **Medical Disclaimer**
+   - Agent is NEVER a psychologist/therapist
+   - NEVER diagnose or prescribe
+   - ALWAYS recommend specialists for serious symptoms
+   - ALWAYS remind this is support, not treatment
+
+4. **Agent Prompts**
+   - NEVER modify prompts in /agents/prompts/ without explicit instruction
+   - All prompts are carefully designed constructs
+   - Create new versions instead of overwriting
+   - Version changes with comments
+
+## Code Style
+
+### TypeScript
+- Always use TypeScript, never plain JS
+- Always define types in types/index.ts first
+- Functional components only
+- Strict mode enabled
+
+### File Structure
+```typescript
+// 1. Imports (React, Next, third-party, local)
+// 2. Types (if not in types/index.ts)
+// 3. Component/function
+// 4. Exports
+```
+
+### API Routes
+```typescript
+// app/api/*/route.ts pattern:
+// 1. Auth check
+// 2. Input validation
+// 3. Error handling (try-catch)
+// 4. Response (NextResponse.json)
+```
+
+### Components
+```typescript
+// components/*/*.tsx pattern:
+// 1. Imports
+// 2. Props interface
+// 3. Component (functional)
+// 4. Export
+```
+
+## Naming Conventions
+
+- Files: camelCase for utils, PascalCase for components
+- Components: PascalCase
+- Functions: camelCase
+- Constants: UPPER_SNAKE_CASE
+- Database: snake_case (Prisma @map)
+- API routes: kebab-case folders
+
+## Database
+
+- Always use Prisma for queries
+- Always use transactions for multi-step operations
+- Never expose service role keys in client code
+- Use Supabase RLS policies for auth
+
+## AI/LLM
+
+- Use LangChain for all agent implementations
+- Store prompts in /agents/prompts/
+- Use RAG retrieval from Pinecone
+- Always include user profile in context
+- GPT-4o for main agents
+- GPT-3.5-turbo for summaries (cost optimization)
+
+## Before Creating New Files
+
+1. Check if type already exists in types/index.ts
+2. Check if client already exists in /lib/
+3. Check if component exists in /components/
+4. Read CLAUDE.md for architecture guidelines
+
+## Commit Messages
+
+Format: `type(scope): description`
+
+Types:
+- feat: New feature
+- fix: Bug fix
+- docs: Documentation
+- style: Formatting
+- refactor: Code restructuring
+- test: Tests
+- chore: Maintenance
+
+Examples:
+- `feat(agent): add trauma agent prompt`
+- `fix(crisis): update detection keywords`
+- `docs(readme): update installation steps`
+
+## Testing
+
+- Test crisis protocol with test-phrases.ts ONLY
+- Never test crisis on real users
+- Always test voice recording in supported browsers
+- Test RAG retrieval before deploying new knowledge
+
+## Performance
+
+- Use React.memo for heavy components
+- Lazy load dashboard sections
+- Stream LLM responses when possible
+- Optimize Pinecone queries (top_k = 5)
+
+## Internationalization
+
+- Use next-intl for all user-facing strings
+- Support en and ru from day one
+- Store translations in /locales/
+- Never hardcode UI text
+
+## Comments
+
+- Comment WHY, not WHAT
+- Document complex algorithms
+- Mark TODOs with: // TODO(phase-N): description
+- Mark security-critical sections: // SECURITY:
+
+## What NOT to Do
+
+❌ Don't create documentation files unless explicitly requested
+❌ Don't add features beyond the request
+❌ Don't modify agent prompts without approval
+❌ Don't use Stripe (project uses Paddle)
+❌ Don't skip error handling in API routes
+❌ Don't test crisis detection on real users
+❌ Don't log sensitive user data
+
+## What TO Do
+
+✅ Read CLAUDE.md before starting
+✅ Check current project phase
+✅ Follow existing code patterns
+✅ Validate inputs on API routes
+✅ Use TypeScript strict mode
+✅ Keep components focused and small
+✅ Write clear commit messages
+✅ Test before committing
+
+## Project Phases
+
+Current: Phase 0 — Setup
+Next: Phase 1 — MVP Core
+
+Check CLAUDE.md for detailed phase roadmap.
+
+---
+
+*Remember: This is a mental health support tool. Code quality and security directly impact user wellbeing.*

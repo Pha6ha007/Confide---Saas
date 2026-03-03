@@ -132,12 +132,20 @@ confide/
 - Path aliases: `@/*` для корневых импортов
 - Централизованные типы в `types/index.ts`
 
+### Git Repository
+
+- ✅ Git initialized and connected to GitHub
+- ✅ Repository: https://github.com/Pha6ha007/Confide---Saas
+- ✅ Initial commit: feat: initial project setup with full stack and structure
+- ✅ Localization files created (en.json, ru.json)
+- ✅ Paddle integration (lib/paddle, app/api/paddle)
+
 ### Следующие шаги
 
 **Phase 0 — Remaining Tasks:**
 - [ ] Настройка Supabase проекта (БД + Auth)
+- [ ] Создать .env.local с API ключами
 - [ ] Первая Prisma миграция
-- [ ] Базовая auth через Supabase
 - [ ] Установка первых shadcn/ui компонентов
 
 **Phase 1 — MVP Core (следующая):**

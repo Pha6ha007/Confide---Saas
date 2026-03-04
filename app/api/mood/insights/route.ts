@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
     if (insights.length === 0) {
       insights.push({
         emoji: '💚',
-        text: 'You're building a valuable record of your emotional journey. Keep it up!',
+        text: "You're building a valuable record of your emotional journey. Keep it up!",
         type: 'positive',
       })
     }

@@ -13,7 +13,7 @@ import { Tooltip } from '@/components/ui/tooltip'
 import { MessageBubble } from './MessageBubble'
 import { TypingIndicator } from './TypingIndicator'
 import { SourcesPanel } from './SourcesPanel'
-import { MoodCheck } from './MoodCheck'
+import MoodCheckIn from '@/components/mood/MoodCheckIn'
 import { SuggestionChips } from './SuggestionChips'
 import { FirstVisitWelcome } from './FirstVisitWelcome'
 import { OnboardingTour } from './OnboardingTour'
@@ -42,9 +42,12 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
   const [agentVoiceEnabled, setAgentVoiceEnabled] = useState(false) // Voice output
   const [userPlan, setUserPlan] = useState<'free' | 'pro' | 'premium'>('free')
   const [preferredName, setPreferredName] = useState<string | undefined>(undefined)
-  const [moodScore, setMoodScore] = useState<number | null>(null) // Mood score for new session
+  const [showBeforeMoodCheckIn, setShowBeforeMoodCheckIn] = useState(false) // Before session mood check-in
+  const [showAfterMoodCheckIn, setShowAfterMoodCheckIn] = useState(false) // After session mood check-in
+  const [hasMoodCheckInToday, setHasMoodCheckInToday] = useState(false) // Has mood check-in today
   const [showOnboarding, setShowOnboarding] = useState(false) // First visit welcome screen
   const [showTour, setShowTour] = useState(false) // Onboarding tour overlay
+  const [messageCount, setMessageCount] = useState(0) // Track user messages in current session
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -81,6 +84,33 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
     }
   }, [])
 
+  // Check if user has mood check-in today
+  useEffect(() => {
+    const checkTodayMoodCheckIn = async () => {
+      try {
+        const today = new Date().toISOString().split('T')[0]
+        const response = await fetch('/api/mood?period=month')
+        if (response.ok) {
+          const data = await response.json()
+          const hasToday = data.entries.some((entry: any) => {
+            const entryDate = new Date(entry.createdAt).toISOString().split('T')[0]
+            return entryDate === today
+          })
+          setHasMoodCheckInToday(hasToday)
+
+          // Show before-session check-in if no session and no check-in today
+          if (!currentSessionId && !hasToday && !showOnboarding && !showTour) {
+            setShowBeforeMoodCheckIn(true)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check mood check-in:', error)
+      }
+    }
+
+    checkTodayMoodCheckIn()
+  }, [currentSessionId, showOnboarding, showTour])
+
   // Handle exercise deep linking from query parameter
   useEffect(() => {
     const exerciseId = searchParams?.get('exercise')
@@ -106,13 +136,8 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
       // - уже есть сообщения
       // - уже загружается
       // - уже загружено
-      // - mood score не выбран (для новой сессии)
-      if (messages.length > 0 || isLoadingGreeting || greetingLoaded) {
-        return
-      }
-
-      // Если это новая сессия (нет currentSessionId), дождаться выбора mood score
-      if (!currentSessionId && moodScore === null) {
+      // - показывается before mood check-in
+      if (messages.length > 0 || isLoadingGreeting || greetingLoaded || showBeforeMoodCheckIn) {
         return
       }
 
@@ -160,7 +185,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
     }
 
     loadGreeting()
-  }, [messages.length, companionName, isLoadingGreeting, greetingLoaded, currentSessionId, moodScore])
+  }, [messages.length, companionName, isLoadingGreeting, greetingLoaded, showBeforeMoodCheckIn])
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -254,6 +279,9 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
     // Reset idle timer on user activity
     resetIdleTimer()
 
+    // Increment message count
+    setMessageCount((prev) => prev + 1)
+
     // Add user message immediately
     const newUserMessage: Message = {
       id: crypto.randomUUID(),
@@ -275,7 +303,6 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
           message: userMessage,
           sessionId: currentSessionId,
           enableVoiceResponse: agentVoiceEnabled, // Передаём флаг голосового ответа
-          moodScore: !currentSessionId ? moodScore : undefined, // Передать mood score только для новой сессии
         }),
       })
 
@@ -363,8 +390,67 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
     setAgentVoiceEnabled(!agentVoiceEnabled)
   }
 
-  const handleMoodSelected = (score: number) => {
-    setMoodScore(score)
+  const handleBeforeMoodCheckInComplete = async (result: {
+    score: number
+    reasons: string[]
+    note: string | null
+  }) => {
+    try {
+      const response = await fetch('/api/mood', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'before',
+          score: result.score,
+          reasons: result.reasons,
+          note: result.note,
+        }),
+      })
+
+      if (response.ok) {
+        setShowBeforeMoodCheckIn(false)
+        setHasMoodCheckInToday(true)
+      } else {
+        console.error('Failed to save before-session mood check-in')
+        toast.error('Failed to save mood check-in')
+      }
+    } catch (error) {
+      console.error('Error saving before-session mood check-in:', error)
+      toast.error('Failed to save mood check-in')
+    }
+  }
+
+  const handleAfterMoodCheckInComplete = async (result: {
+    score: number
+    reasons: string[]
+    note: string | null
+  }) => {
+    try {
+      const response = await fetch('/api/mood', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'after',
+          score: result.score,
+          reasons: result.reasons,
+          note: result.note,
+          sessionId: currentSessionId,
+        }),
+      })
+
+      if (response.ok) {
+        setShowAfterMoodCheckIn(false)
+        toast.success('Mood saved', {
+          description: 'Your after-session mood has been recorded.',
+        })
+      } else {
+        console.error('Failed to save after-session mood check-in')
+        toast.error('Failed to save mood check-in')
+      }
+    } catch (error) {
+      console.error('Error saving after-session mood check-in:', error)
+      toast.error('Failed to save mood check-in')
+    }
   }
 
   const handleStartTour = () => {
@@ -391,11 +477,16 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
     if (!currentSessionId || messages.length < 2) {
       setMessages([])
       setCurrentSessionId(undefined)
-      setMoodScore(null)
+      setMessageCount(0)
       setMemoryUpdated(false)
       setGreetingLoaded(false)
       setSources([])
       return
+    }
+
+    // Показать after-session mood check-in если 5+ сообщений от пользователя
+    if (messageCount >= 5) {
+      setShowAfterMoodCheckIn(true)
     }
 
     try {
@@ -427,7 +518,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
       // Сбросить всё состояние для новой сессии
       setMessages([])
       setCurrentSessionId(undefined)
-      setMoodScore(null)
+      setMessageCount(0)
       setMemoryUpdated(false)
       setGreetingLoaded(false)
       setSources([])
@@ -436,9 +527,6 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
       toast.error('Failed to save session')
     }
   }
-
-  // Show MoodCheck for new sessions before greeting
-  const shouldShowMoodCheck = !currentSessionId && moodScore === null
 
   // Show SuggestionChips when there's only greeting (no user messages yet)
   const shouldShowSuggestionChips = messages.length === 1 && messages[0].role === 'assistant' && !isLoading
@@ -456,9 +544,6 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
       ) : showTour ? (
         /* Onboarding Tour Overlay */
         <OnboardingTour onComplete={handleCompleteTour} onSkip={handleCompleteTour} />
-      ) : shouldShowMoodCheck ? (
-        /* Mood Check Screen — показывать перед началом новой сессии */
-        <MoodCheck onMoodSelected={handleMoodSelected} />
       ) : (
         <>
           {/* Header with New Conversation button */}
@@ -621,6 +706,30 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
         </p>
       </div>
         </>
+      )}
+
+      {/* Before-Session Mood Check-In Modal */}
+      {showBeforeMoodCheckIn && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <MoodCheckIn
+            type="before"
+            companionName={companionName}
+            onComplete={handleBeforeMoodCheckInComplete}
+            onSkip={() => setShowBeforeMoodCheckIn(false)}
+          />
+        </div>
+      )}
+
+      {/* After-Session Mood Check-In Modal */}
+      {showAfterMoodCheckIn && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <MoodCheckIn
+            type="after"
+            companionName={companionName}
+            onComplete={handleAfterMoodCheckInComplete}
+            onSkip={() => setShowAfterMoodCheckIn(false)}
+          />
+        </div>
       )}
     </div>
   )

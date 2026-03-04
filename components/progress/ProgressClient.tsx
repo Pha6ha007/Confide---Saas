@@ -3,13 +3,16 @@
 // ProgressClient — Client component for Progress page with mood tracking
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { BarChart3, TrendingUp, Flame, Calendar as CalendarIcon, Lightbulb } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import { BarChart3, TrendingUp, Flame, Calendar as CalendarIcon, Lightbulb, Plus } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import MoodGraph from '@/components/mood/MoodGraph'
 import MoodHeatmap from '@/components/mood/MoodHeatmap'
 import TopReasons from '@/components/mood/TopReasons'
 import InsightCard from '@/components/mood/InsightCard'
+import MoodCheckIn from '@/components/mood/MoodCheckIn'
 import type { MoodEntryData, MoodStats, MoodInsight } from '@/lib/mood/data'
 import { getMoodEmoji } from '@/lib/mood/data'
 
@@ -21,9 +24,12 @@ interface ProgressClientProps {
 type Tab = 'graph' | 'calendar' | 'triggers'
 
 export default function ProgressClient({ initialStats, initialEntries }: ProgressClientProps) {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('graph')
   const [insights, setInsights] = useState<MoodInsight[]>([])
   const [loading, setLoading] = useState(true)
+  const [showMoodCheckIn, setShowMoodCheckIn] = useState(false)
+  const [savingMood, setSavingMood] = useState(false)
 
   // Fetch insights
   useEffect(() => {
@@ -44,6 +50,39 @@ export default function ProgressClient({ initialStats, initialEntries }: Progres
     fetchInsights()
   }, [])
 
+  // Handle mood check-in completion
+  const handleMoodCheckInComplete = async (result: {
+    score: number
+    reasons: string[]
+    note: string | null
+  }) => {
+    setSavingMood(true)
+    try {
+      const response = await fetch('/api/mood', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'before',
+          score: result.score,
+          reasons: result.reasons,
+          note: result.note,
+        }),
+      })
+
+      if (response.ok) {
+        setShowMoodCheckIn(false)
+        // Refresh page data
+        router.refresh()
+      } else {
+        console.error('Failed to save mood check-in')
+      }
+    } catch (error) {
+      console.error('Error saving mood check-in:', error)
+    } finally {
+      setSavingMood(false)
+    }
+  }
+
   // Calculate reason counts
   const reasonCounts = initialEntries.reduce(
     (acc, entry) => {
@@ -57,31 +96,75 @@ export default function ProgressClient({ initialStats, initialEntries }: Progres
 
   const avgBeforeEmoji = initialStats.avgBefore ? getMoodEmoji(Math.round(initialStats.avgBefore)) : null
   const avgAfterEmoji = initialStats.avgAfter ? getMoodEmoji(Math.round(initialStats.avgAfter)) : null
+  const hasData = initialStats.totalEntries > 0
 
   return (
-    <div className="space-y-8">
-      {/* Header with streak */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-serif text-4xl font-semibold text-foreground">Your Mood</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Track your emotional journey</p>
+    <>
+      <div className="space-y-8">
+        {/* Header with streak and Log mood button */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-serif text-4xl font-semibold text-foreground">Your Mood</h1>
+            <p className="text-muted-foreground mt-2 text-lg">Track your emotional journey</p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {initialStats.streak > 0 && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-full shadow-lg"
+              >
+                <Flame className="w-5 h-5" />
+                <span className="font-serif text-2xl font-semibold">{initialStats.streak}</span>
+                <span className="font-medium">day streak</span>
+              </motion.div>
+            )}
+
+            {hasData && (
+              <Button
+                onClick={() => setShowMoodCheckIn(true)}
+                className="bg-[#6366F1] text-white hover:bg-[#4F46E5] rounded-full"
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Log mood
+              </Button>
+            )}
+          </div>
         </div>
 
-        {initialStats.streak > 0 && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-full shadow-lg"
-          >
-            <Flame className="w-5 h-5" />
-            <span className="font-serif text-2xl font-semibold">{initialStats.streak}</span>
-            <span className="font-medium">day streak</span>
-          </motion.div>
+        {/* Empty State */}
+        {!hasData && (
+          <Card className="glass-button border border-white/20 shadow-large rounded-3xl transition-smooth hover-lift">
+            <CardContent className="p-12 text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="w-20 h-20 bg-gradient-to-br from-[#6366F1] to-[#818CF8] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+              >
+                <BarChart3 className="w-10 h-10 text-white" />
+              </motion.div>
+              <h2 className="font-serif text-2xl font-semibold text-foreground mb-3">
+                Start tracking your mood
+              </h2>
+              <p className="text-muted-foreground text-lg mb-8 max-w-md mx-auto">
+                Check in before and after sessions to see patterns over time
+              </p>
+              <Button
+                onClick={() => setShowMoodCheckIn(true)}
+                className="bg-gradient-to-r from-[#6366F1] to-[#818CF8] text-white font-semibold hover:shadow-lg transition-all px-8 py-6 text-lg"
+                size="lg"
+              >
+                Log my mood now
+              </Button>
+            </CardContent>
+          </Card>
         )}
-      </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Stats Row - Only show if has data */}
+        {hasData && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Avg Before */}
         <Card className="glass-button border border-white/20 shadow-large rounded-2xl">
           <CardContent className="p-6">
@@ -143,10 +226,11 @@ export default function ProgressClient({ initialStats, initialEntries }: Progres
             <p className="text-sm text-muted-foreground mt-1">this month</p>
           </CardContent>
         </Card>
-      </div>
+        </div>
+      )}
 
       {/* AI Insights */}
-      {!loading && insights.length > 0 && (
+      {hasData && !loading && insights.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-foreground">
             <Lightbulb className="w-5 h-5 text-[#F59E0B]" />
@@ -162,7 +246,8 @@ export default function ProgressClient({ initialStats, initialEntries }: Progres
       )}
 
       {/* Main Content Tabs */}
-      <Card className="glass-button border border-white/20 shadow-large rounded-2xl">
+      {hasData && (
+        <Card className="glass-button border border-white/20 shadow-large rounded-2xl">
         <CardContent className="p-8">
           {/* Tab headers */}
           <div className="flex items-center gap-4 border-b border-gray-200 mb-8">
@@ -224,9 +309,10 @@ export default function ProgressClient({ initialStats, initialEntries }: Progres
           </div>
         </CardContent>
       </Card>
+      )}
 
       {/* Recent Check-ins */}
-      {initialEntries.length > 0 && (
+      {hasData && (
         <Card className="glass-button border border-white/20 shadow-large rounded-2xl">
           <CardContent className="p-8">
             <h3 className="font-serif text-2xl font-semibold text-foreground mb-6">
@@ -287,6 +373,18 @@ export default function ProgressClient({ initialStats, initialEntries }: Progres
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+
+      {/* MoodCheckIn Modal */}
+      <AnimatePresence>
+        {showMoodCheckIn && (
+          <MoodCheckIn
+            type="before"
+            onComplete={handleMoodCheckInComplete}
+            onSkip={() => setShowMoodCheckIn(false)}
+          />
+        )}
+      </AnimatePresence>
+    </>
   )
 }

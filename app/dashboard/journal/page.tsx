@@ -82,24 +82,14 @@ export default async function JournalPage() {
                   </span>
                 </div>
 
-                {/* Insight - главное */}
-                <div className="mb-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-[#F59E0B] to-[#FBBF24] rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
-                      <Sparkles className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground text-lg mb-2">Insight</h3>
-                      <p className="text-foreground leading-relaxed">{entry.insight}</p>
-                    </div>
+                {/* Saved Content */}
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-[#F59E0B] to-[#FBBF24] rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                    <Sparkles className="w-4 h-4 text-white" />
                   </div>
-                </div>
-
-                {/* Original Content - контекст */}
-                <div className="mt-4 pt-4 border-t border-white/20">
-                  <p className="text-sm text-muted-foreground italic leading-relaxed">
-                    "{entry.content}"
-                  </p>
+                  <div className="flex-1">
+                    <p className="text-foreground leading-relaxed">{entry.content}</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

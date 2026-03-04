@@ -25,7 +25,7 @@ export default async function ProgressPage() {
   }
 
   // Получить статистику
-  const [totalSessions, totalMessages, firstSession] = await Promise.all([
+  const [totalSessions, totalMessages, firstSession, sessionsWithMood] = await Promise.all([
     prisma.session.count({
       where: { userId: user.id },
     }),
@@ -35,6 +35,19 @@ export default async function ProgressPage() {
     prisma.session.findFirst({
       where: { userId: user.id },
       orderBy: { createdAt: 'asc' },
+    }),
+    // Получить последние 10 сессий с mood score
+    prisma.session.findMany({
+      where: {
+        userId: user.id,
+        moodScore: { not: null },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: {
+        moodScore: true,
+        createdAt: true,
+      },
     }),
   ])
 
@@ -76,6 +89,27 @@ export default async function ProgressPage() {
   }
 
   const hasData = totalSessions > 0
+
+  // Вычислить средний mood score
+  const averageMoodScore =
+    sessionsWithMood.length > 0
+      ? Math.round(
+          sessionsWithMood.reduce((sum, s) => sum + (s.moodScore || 0), 0) / sessionsWithMood.length
+        )
+      : null
+
+  // Получить цвет для mood score
+  const getMoodColor = (score: number) => {
+    if (score <= 3) return 'from-red-500 to-red-600'
+    if (score <= 6) return 'from-amber-400 to-amber-500'
+    return 'from-emerald-400 to-emerald-500'
+  }
+
+  const getMoodLabel = (score: number) => {
+    if (score <= 3) return 'Struggling'
+    if (score <= 6) return 'Okay'
+    return 'Good'
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-8 space-y-8 animate-fade-in-up">
@@ -172,7 +206,7 @@ export default async function ProgressPage() {
             </Card>
           </div>
 
-          {/* Mood Graph Placeholder */}
+          {/* Mood Tracking */}
           <Card className="glass-button border border-white/20 shadow-large rounded-2xl transition-smooth hover-lift">
             <CardContent className="p-8">
               <div className="flex items-center space-x-3 mb-6">
@@ -184,20 +218,79 @@ export default async function ProgressPage() {
                     Mood Tracking
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Visualize your emotional journey over time
+                    {sessionsWithMood.length > 0
+                      ? 'Your emotional journey over time'
+                      : 'Track your mood at the start of each session'}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-white/30 rounded-xl p-12 text-center backdrop-blur-sm">
-                <TrendingUp className="w-12 h-12 text-[#6366F1] mx-auto mb-4 opacity-50" />
-                <p className="text-muted-foreground">
-                  Mood graph visualization coming soon
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  We'll track your mood scores and show beautiful charts here
-                </p>
-              </div>
+              {sessionsWithMood.length === 0 ? (
+                <div className="bg-white/30 rounded-xl p-12 text-center backdrop-blur-sm">
+                  <TrendingUp className="w-12 h-12 text-[#6366F1] mx-auto mb-4 opacity-50" />
+                  <p className="text-muted-foreground">No mood data yet</p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Start your next session to track your mood
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Average Mood Score */}
+                  {averageMoodScore && (
+                    <div className="bg-white/30 rounded-xl p-6 backdrop-blur-sm">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">Average Mood</p>
+                          <p className="text-3xl font-bold text-foreground">{averageMoodScore}/10</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {getMoodLabel(averageMoodScore)}
+                          </p>
+                        </div>
+                        <div
+                          className={`w-20 h-20 bg-gradient-to-br ${getMoodColor(
+                            averageMoodScore
+                          )} rounded-2xl flex items-center justify-center shadow-lg`}
+                        >
+                          <span className="text-3xl font-bold text-white">
+                            {averageMoodScore}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recent Mood Scores */}
+                  <div>
+                    <p className="text-sm font-medium text-foreground mb-3">
+                      Recent Sessions
+                    </p>
+                    <div className="grid grid-cols-5 gap-3">
+                      {sessionsWithMood.map((session, index) => (
+                        <div
+                          key={index}
+                          className="aspect-square rounded-xl bg-white/30 backdrop-blur-sm flex flex-col items-center justify-center p-2 hover:scale-105 transition-transform"
+                        >
+                          <div
+                            className={`w-8 h-8 bg-gradient-to-br ${getMoodColor(
+                              session.moodScore!
+                            )} rounded-lg flex items-center justify-center shadow-md mb-1`}
+                          >
+                            <span className="text-sm font-bold text-white">
+                              {session.moodScore}
+                            </span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(session.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

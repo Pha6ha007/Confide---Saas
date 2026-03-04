@@ -104,17 +104,17 @@ export async function GET(request: NextRequest) {
 function getNewUserGreeting(companionName: string, preferredName: string | undefined, language: 'en' | 'ru'): string {
   if (language === 'ru') {
     const greeting = preferredName
-      ? `Привет, ${preferredName}! Я ${companionName}, и я очень рад что ты здесь.`
-      : `Привет! Я ${companionName}, и я очень рад что ты здесь.`
+      ? `Привет, ${preferredName}! Я ${companionName}, твой личный собеседник.`
+      : `Привет! Я ${companionName}, твой личный собеседник.`
 
-    return `${greeting} Это твоё пространство — без осуждения, без спешки. Что у тебя на душе в последнее время?`
+    return `${greeting} Я здесь когда бы тебе ни понадобилось поговорить — и я буду помнить всё, чем мы делимся, так что тебе никогда не придётся повторяться. Что у тебя на уме сегодня?`
   }
 
   const greeting = preferredName
-    ? `Hi ${preferredName}! I'm ${companionName}, and I'm really glad you're here.`
-    : `Hi! I'm ${companionName}, and I'm really glad you're here.`
+    ? `Hi ${preferredName}! I'm ${companionName}, your personal companion.`
+    : `Hi! I'm ${companionName}, your personal companion.`
 
-  return `${greeting} This is your space — no judgment, no rush. What's been on your mind lately?`
+  return `${greeting} I'm here whenever you need to talk — and I'll remember everything we share, so you never have to repeat yourself. What's on your mind today?`
 }
 
 function getReturningUserGreeting(
@@ -169,10 +169,16 @@ function getFollowUpGreeting(
 
 function getRegularGreeting(companionName: string, preferredName: string | undefined, language: 'en' | 'ru'): string {
   if (language === 'ru') {
-    const greeting = preferredName ? `Привет, ${preferredName}!` : 'Привет!'
-    return `${greeting} Как дела сегодня?`
+    const greeting = preferredName
+      ? `Привет, ${preferredName}! Я ${companionName}, твой личный собеседник.`
+      : `Привет! Я ${companionName}, твой личный собеседник.`
+
+    return `${greeting} Я здесь когда бы тебе ни понадобилось поговорить — и я буду помнить всё, чем мы делимся, так что тебе никогда не придётся повторяться. Что у тебя на уме сегодня?`
   }
 
-  const greeting = preferredName ? `Hi ${preferredName}!` : 'Hi!'
-  return `${greeting} How are you doing today?`
+  const greeting = preferredName
+    ? `Hi ${preferredName}! I'm ${companionName}, your personal companion.`
+    : `Hi! I'm ${companionName}, your personal companion.`
+
+  return `${greeting} I'm here whenever you need to talk — and I'll remember everything we share, so you never have to repeat yourself. What's on your mind today?`
 }

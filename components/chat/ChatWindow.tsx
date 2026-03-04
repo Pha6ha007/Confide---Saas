@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, Mic, Keyboard, Volume2, VolumeX, Crown } from 'lucide-react'
+import { Send, Loader2, Mic, Keyboard, Volume2, VolumeX, Crown, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
@@ -10,8 +11,13 @@ import { Tooltip } from '@/components/ui/tooltip'
 import { MessageBubble } from './MessageBubble'
 import { TypingIndicator } from './TypingIndicator'
 import { SourcesPanel } from './SourcesPanel'
+import { MoodCheck } from './MoodCheck'
+import { SuggestionChips } from './SuggestionChips'
+import { FirstVisitWelcome } from './FirstVisitWelcome'
+import { OnboardingTour } from './OnboardingTour'
 import { VoiceRecorder } from '@/components/voice/VoiceRecorder'
 import { AudioPlayer } from '@/components/voice/AudioPlayer'
+import { TooltipSimple } from '@/components/ui/tooltip-simple'
 import { Message } from '@/types'
 
 interface ChatWindowProps {
@@ -32,6 +38,10 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
   const [isVoiceMode, setIsVoiceMode] = useState(false) // Voice input
   const [agentVoiceEnabled, setAgentVoiceEnabled] = useState(false) // Voice output
   const [userPlan, setUserPlan] = useState<'free' | 'pro' | 'premium'>('free')
+  const [preferredName, setPreferredName] = useState<string | undefined>(undefined)
+  const [moodScore, setMoodScore] = useState<number | null>(null) // Mood score for new session
+  const [showOnboarding, setShowOnboarding] = useState(false) // First visit welcome screen
+  const [showTour, setShowTour] = useState(false) // Onboarding tour overlay
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -50,6 +60,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
           const data = await response.json()
           setCompanionName(data.companionName || 'Alex')
           setUserPlan(data.plan || 'free')
+          setPreferredName(data.preferredName)
         }
       } catch (error) {
         console.error('Failed to fetch user data:', error)
@@ -59,6 +70,14 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
     fetchUserData()
   }, [])
 
+  // Проверить первый ли это визит (SSR safe)
+  useEffect(() => {
+    const isOnboardingComplete = localStorage.getItem('confide_onboarding_complete')
+    if (!isOnboardingComplete) {
+      setShowOnboarding(true)
+    }
+  }, [])
+
   // Загрузить приветственное сообщение если чат пустой
   useEffect(() => {
     const loadGreeting = async () => {
@@ -66,7 +85,13 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
       // - уже есть сообщения
       // - уже загружается
       // - уже загружено
+      // - mood score не выбран (для новой сессии)
       if (messages.length > 0 || isLoadingGreeting || greetingLoaded) {
+        return
+      }
+
+      // Если это новая сессия (нет currentSessionId), дождаться выбора mood score
+      if (!currentSessionId && moodScore === null) {
         return
       }
 
@@ -96,10 +121,14 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
       } catch (error) {
         console.error('Failed to load greeting:', error)
         // Fallback greeting если API недоступен
+        const greeting = preferredName
+          ? `Hi ${preferredName}! I'm ${companionName}, your personal companion.`
+          : `Hi! I'm ${companionName}, your personal companion.`
+
         const fallbackMessage: Message = {
           id: crypto.randomUUID(),
           role: 'assistant',
-          content: `Hi! I'm ${companionName}, and I'm here to listen. What's on your mind?`,
+          content: `${greeting} I'm here whenever you need to talk — and I'll remember everything we share, so you never have to repeat yourself. What's on your mind today?`,
           createdAt: new Date().toISOString(),
         }
         setMessages([fallbackMessage])
@@ -110,7 +139,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
     }
 
     loadGreeting()
-  }, [messages.length, companionName, isLoadingGreeting, greetingLoaded])
+  }, [messages.length, companionName, isLoadingGreeting, greetingLoaded, currentSessionId, moodScore])
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -225,6 +254,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
           message: userMessage,
           sessionId: currentSessionId,
           enableVoiceResponse: agentVoiceEnabled, // Передаём флаг голосового ответа
+          moodScore: !currentSessionId ? moodScore : undefined, // Передать mood score только для новой сессии
         }),
       })
 
@@ -312,10 +342,127 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
     setAgentVoiceEnabled(!agentVoiceEnabled)
   }
 
+  const handleMoodSelected = (score: number) => {
+    setMoodScore(score)
+  }
+
+  const handleStartTour = () => {
+    setShowOnboarding(false)
+    setShowTour(true)
+  }
+
+  const handleSkipTour = () => {
+    localStorage.setItem('confide_onboarding_complete', 'true')
+    setShowOnboarding(false)
+  }
+
+  const handleCompleteTour = () => {
+    setShowTour(false)
+  }
+
+  const handleChipSelect = (text: string) => {
+    // Вызвать ту же функцию что и при отправке сообщения
+    handleSubmit(undefined, text)
+  }
+
+  const handleNewConversation = async () => {
+    // Если нет активной сессии или мало сообщений - просто сбросить
+    if (!currentSessionId || messages.length < 2) {
+      setMessages([])
+      setCurrentSessionId(undefined)
+      setMoodScore(null)
+      setMemoryUpdated(false)
+      setGreetingLoaded(false)
+      setSources([])
+      return
+    }
+
+    try {
+      // Завершить текущую сессию через Memory Agent
+      const response = await fetch('/api/memory', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId: currentSessionId,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to end session')
+      }
+
+      const data = await response.json()
+
+      // Показать summary как уведомление
+      if (data.summary) {
+        toast.success('Session saved', {
+          description: data.summary,
+          duration: 5000,
+        })
+      }
+
+      // Сбросить всё состояние для новой сессии
+      setMessages([])
+      setCurrentSessionId(undefined)
+      setMoodScore(null)
+      setMemoryUpdated(false)
+      setGreetingLoaded(false)
+      setSources([])
+    } catch (error) {
+      console.error('Failed to start new conversation:', error)
+      toast.error('Failed to save session')
+    }
+  }
+
+  // Show MoodCheck for new sessions before greeting
+  const shouldShowMoodCheck = !currentSessionId && moodScore === null
+
+  // Show SuggestionChips when there's only greeting (no user messages yet)
+  const shouldShowSuggestionChips = messages.length === 1 && messages[0].role === 'assistant' && !isLoading
+
   return (
     <div className="flex flex-col h-full relative">
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      {/* First Visit Welcome Screen */}
+      {showOnboarding ? (
+        <FirstVisitWelcome
+          companionName={companionName}
+          preferredName={preferredName}
+          onStartTour={handleStartTour}
+          onSkipTour={handleSkipTour}
+        />
+      ) : showTour ? (
+        /* Onboarding Tour Overlay */
+        <OnboardingTour onComplete={handleCompleteTour} onSkip={handleCompleteTour} />
+      ) : shouldShowMoodCheck ? (
+        /* Mood Check Screen — показывать перед началом новой сессии */
+        <MoodCheck onMoodSelected={handleMoodSelected} />
+      ) : (
+        <>
+          {/* Header with New Conversation button */}
+          {currentSessionId && messages.length > 0 && (
+            <div className="border-b border-white/20 px-6 py-3 glass backdrop-blur-md">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-sm text-muted-foreground">Active session</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleNewConversation}
+                  className="text-xs hover:bg-white/20 transition-all"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  New Conversation
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => (
           <MessageBubble
             key={message.id}
@@ -326,6 +473,11 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
 
         {/* Show typing indicator when loading greeting or response */}
         {(isLoading || isLoadingGreeting) && <TypingIndicator companionName={companionName} />}
+
+        {/* Show Suggestion Chips after greeting */}
+        {shouldShowSuggestionChips && (
+          <SuggestionChips onSelect={handleChipSelect} />
+        )}
 
         <div ref={messagesEndRef} />
       </div>
@@ -425,7 +577,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
 
                 {/* Voice Button для FREE — заблокирован с tooltip */}
                 {!isVoiceAvailable && (
-                  <Tooltip content="Upgrade to Pro for voice features" side="left">
+                  <TooltipSimple text="Upgrade to Pro for voice features" position="left">
                     <Button
                       type="button"
                       variant="outline"
@@ -435,7 +587,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
                     >
                       <Mic className="w-4 h-4" />
                     </Button>
-                  </Tooltip>
+                  </TooltipSimple>
                 )}
               </div>
             </form>
@@ -447,6 +599,8 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
           services.
         </p>
       </div>
+        </>
+      )}
     </div>
   )
 }

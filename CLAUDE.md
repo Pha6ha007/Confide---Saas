@@ -248,6 +248,7 @@ confide/
 │   │   ├── voice/route.ts             # Whisper транскрипция
 │   │   ├── tts/route.ts               # ElevenLabs TTS
 │   │   ├── memory/route.ts            # Memory Agent
+│   │   ├── journal/route.ts           # Сохранение инсайтов
 │   │   ├── crisis/route.ts            # Crisis Detection
 │   │   └── paddle/
 │   │       ├── webhook/route.ts       # Paddle события подписок
@@ -282,6 +283,7 @@ confide/
 │   ├── chat/
 │   │   ├── ChatWindow.tsx
 │   │   ├── MessageBubble.tsx
+│   │   ├── MoodCheck.tsx              # Mood score перед сессией
 │   │   ├── TypingIndicator.tsx
 │   │   └── SourcesPanel.tsx           # Источники из RAG
 │   ├── voice/
@@ -294,6 +296,7 @@ confide/
 │   │   ├── VoiceQuiz.tsx
 │   │   └── VoicePreview.tsx
 │   └── ui/                            # shadcn компоненты
+│       └── toaster.tsx                # Toast notifications (Sonner)
 ├── types/index.ts                     # Все TypeScript типы
 ├── prisma/schema.prisma
 ├── scripts/
@@ -616,7 +619,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 **Фичи от Woebot:**
 - [ ] Утренние check-ins — "Как ты сегодня?" push уведомления
-- [ ] Mood score 1-10 перед началом сессии
+- [x] Mood score 1-10 перед началом сессии ✅
 
 **PWA — мобильная версия:**
 - [ ] next-pwa интеграция
@@ -631,8 +634,11 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - [ ] Бета-тест с реальными пользователями
 
 ### Фаза 4 — Аналитика (5-6 недель)
-- [ ] Личный дневник инсайтов
-- [ ] График настроения с визуализацией (от Youper)
+- [x] Личный дневник инсайтов ✅
+- [x] График настроения с визуализацией (от Youper) ✅
+- [x] Кнопка сохранения инсайтов из чата ✅
+- [x] Toast notifications система (Sonner) ✅
+- [x] New Conversation — завершение сессии с Memory Agent ✅
 - [ ] Прогресс-карта по целям
 - [ ] Письмо из прошлого (ежемесячный отчёт)
 - [ ] Домашние задания от агента

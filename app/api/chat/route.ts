@@ -26,6 +26,7 @@ const ChatRequestSchema = z.object({
   message: z.string().min(1).max(5000),
   sessionId: z.string().uuid().optional(),
   enableVoiceResponse: z.boolean().optional(), // Флаг для голосового ответа
+  moodScore: z.number().int().min(1).max(10).optional(), // Mood score для новой сессии
 })
 
 export async function POST(request: NextRequest) {
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { message: userMessage, sessionId, enableVoiceResponse } = validation.data
+    const { message: userMessage, sessionId, enableVoiceResponse, moodScore } = validation.data
 
     // ============================================
     // 3. ПОЛУЧИТЬ ИЛИ СОЗДАТЬ ПОЛЬЗОВАТЕЛЯ В БД
@@ -175,6 +176,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId: user.id,
           agentType: routingDecision.route,
+          moodScore: moodScore || null, // Сохранить mood score если передан
         },
       })
 

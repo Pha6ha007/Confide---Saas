@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans, Fraunces } from 'next/font/google'
+import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -28,7 +29,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${plusJakartaSans.variable} ${fraunces.variable}`}>
-      <body className={plusJakartaSans.className}>{children}</body>
+      <body className={plusJakartaSans.className}>
+        {children}
+        <Toaster />
+      </body>
     </html>
   )
 }

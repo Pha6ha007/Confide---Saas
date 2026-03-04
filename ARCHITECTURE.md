@@ -1743,4 +1743,25 @@ npx tsx scripts/ingest-knowledge.ts --file="..." --namespace="..." --title="..."
 
 ---
 
+## [2026-03-04] Onboarding UX COMPLETED
+
+### Созданные компоненты
+- components/chat/SuggestionChips.tsx — 4 стартовые подсказки тем
+- components/chat/FirstVisitWelcome.tsx — welcome screen первого визита
+- components/chat/OnboardingTour.tsx — 4-шаговый интерактивный тур
+- components/ui/tooltip-simple.tsx — tooltip на hover
+
+### Изменённые файлы
+- components/chat/ChatWindow.tsx — интеграция всех onboarding компонентов
+- components/chat/MessageBubble.tsx — tooltip на bookmark
+- app/api/chat/greeting/route.ts — новое приветствие для первой сессии
+
+### Как работает
+1. Первый визит → FirstVisitWelcome ("Hi Pasha, I'm Alex")
+2. "Take a quick tour" → OnboardingTour (4 шага)
+3. После тура → чат с SuggestionChips
+4. localStorage "confide_onboarding_complete" → пропуск onboarding при повторных визитах
+
+---
+
 *Log maintained by Claude Code + Cursor*

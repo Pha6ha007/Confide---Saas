@@ -36,6 +36,7 @@ model User {
   journalEntries JournalEntry[]
   diaries        Diary[]
   subscription   Subscription?
+  moodEntries    MoodEntry[]
 
   @@map("users")
 }
@@ -61,16 +62,19 @@ model UserProfile {
 // ============================================
 
 model Session {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id") @db.Uuid
-  agentType String    @map("agent_type") // anxiety | family | trauma | etc
-  createdAt DateTime  @default(now()) @map("created_at")
-  endedAt   DateTime? @map("ended_at")
-  summary   String?   // GPT summary 5-7 фактов
-  moodScore Int?      @map("mood_score") // 1-10 настроение пользователя
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  agentType   String    @map("agent_type") // anxiety | family | trauma | etc
+  createdAt   DateTime  @default(now()) @map("created_at")
+  endedAt     DateTime? @map("ended_at")
+  summary     String?   // GPT summary 5-7 фактов
+  moodScore   Int?      @map("mood_score") // 1-10 настроение пользователя (deprecated, use MoodEntry)
+  moodBefore  Int?      @map("mood_before") // 1-7 настроение до сессии
+  moodAfter   Int?      @map("mood_after") // 1-7 настроение после сессии
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages Message[]
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages    Message[]
+  moodEntries MoodEntry[]
 
   @@map("sessions")
 }
@@ -160,4 +164,24 @@ model Diary {
 
   @@unique([userId, month, year]) // Один дневник на пользователя в месяц
   @@map("diaries")
+}
+
+// ============================================
+// MOOD TRACKING
+// ============================================
+
+model MoodEntry {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  sessionId String?  @map("session_id") @db.Uuid
+  type      String   // "before" | "after"
+  score     Int      // 1-7
+  reasons   Json     @default("[]") // ["work", "family", "sleep"]
+  note      String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session Session? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@map("mood_entries")
 }

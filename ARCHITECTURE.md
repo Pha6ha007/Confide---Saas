@@ -1853,4 +1853,297 @@ setInterval(() => {
 
 ---
 
+## [2026-03-04] Mood Tracking System — COMPLETED
+
+**Full mood tracking implementation** — 100% ✅
+
+### Overview
+
+Complete mood tracking system with 3-step check-ins, visualizations, and AI insights — inspired by Woebot/Youper but with deeper analytics.
+
+### Database Schema
+
+**New Model: MoodEntry**
+```prisma
+model MoodEntry {
+  id        String   @id @default(uuid())
+  userId    String
+  sessionId String?
+  type      String   // "before" | "after"
+  score     Int      // 1-7 (emoji scale)
+  reasons   Json     // ["work", "family", "sleep"]
+  note      String?
+  createdAt DateTime
+}
+```
+
+**Updated Session model:**
+- Added `moodBefore` (Int?)
+- Added `moodAfter` (Int?)
+- Relation to `MoodEntry[]`
+
+**Migration:** `20260304202936_add_mood_tracking`
+
+### API Routes
+
+**POST /api/mood**
+- Save mood check-in (before/after)
+- Input validation with Zod
+- Auto-update session.moodBefore/moodAfter if sessionId provided
+- Returns: MoodEntry record
+
+**GET /api/mood**
+- Fetch mood history by period (week/month/all)
+- Query param: `?period=week|month|all`
+- Returns: entries[] + stats (avgBefore, avgAfter, improvement, streak, bestStreak)
+- Streak calculation: consecutive days with at least one entry
+
+**GET /api/mood/insights**
+- AI-generated insights (hardcoded logic, can add LLM later)
+- Analyzes last 30 days of data
+- Returns: insights[] with emoji, text, type (positive/neutral/tip)
+
+**Insights logic:**
+1. Before vs After trend
+2. Top trigger identification
+3. Streak achievements
+4. Time of day patterns (morning vs evening)
+
+### Data Structure
+
+**lib/mood/data.ts:**
+
+**MOOD_EMOJIS** (7-point scale):
+```typescript
+[
+  { score: 1, emoji: '😞', label: 'Awful', color: '#EF4444' },
+  { score: 2, emoji: '😔', label: 'Bad', color: '#F97316' },
+  { score: 3, emoji: '😕', label: 'Meh', color: '#EAB308' },
+  { score: 4, emoji: '🙂', label: 'Okay', color: '#84CC16' },
+  { score: 5, emoji: '😊', label: 'Good', color: '#22C55E' },
+  { score: 6, emoji: '😄', label: 'Great', color: '#10B981' },
+  { score: 7, emoji: '🤩', label: 'Amazing', color: '#06B6D4' },
+]
+```
+
+**REASON_TAGS** (12 tags):
+- work 💼, family 👨‍👩‍👧, relationship 💕, health 🏥
+- sleep 😴, exercise 🏃, money 💰, loneliness 🌧
+- anxiety 😰, achievement 🏆, weather ☀️, social 🎉
+
+### UI Components
+
+**components/mood/MoodCheckIn.tsx**
+- 3-step flow with Framer Motion animations
+- Step 1: Emoji selection (7 emojis, auto-advance on select)
+- Step 2: Reason tags (multi-select, 12 tags)
+- Step 3: Optional note (textarea, 500 char limit)
+- Progress dots indicator
+- Back navigation between steps
+- Props: `type` (before/after), `companionName`, `onComplete`, `onSkip`
+
+**Design details:**
+- Selected emoji: scale(1.25) + translateY(-10px)
+- Unselected: grayscale + opacity 0.4
+- Pill badge showing selected mood
+- Selected tags: indigo background + scale(1.05) + checkmark
+- Smooth AnimatePresence transitions
+
+**components/mood/MoodGraph.tsx**
+- SVG line chart with before/after lines
+- 2 lines: before (red dashed #EF4444) + after (green solid #22C55E)
+- Emoji Y-axis labels (instead of numbers)
+- Smooth cubic bezier curves
+- Area fill under lines (very transparent)
+- Data points: hover scale
+- Period toggle: Week / Month
+- Legend at bottom
+
+**components/mood/MoodHeatmap.tsx**
+- GitHub-style calendar grid
+- Last 12 weeks of data
+- Color scale based on avgMood:
+  - No data: gray
+  - 1-2: red
+  - 3: orange
+  - 4: yellow
+  - 5: lime
+  - 6: green
+  - 7: cyan
+- Today highlighted with ring
+- Hover tooltip with date + mood
+- Month labels at top
+- Day labels (M/T/W/T/F/S/S) on left
+
+**components/mood/TopReasons.tsx**
+- Horizontal bar chart
+- Top 5 most frequent reasons
+- Emoji + label + count
+- Bars: indigo gradient, animated width
+- Sorted by frequency (descending)
+
+**components/mood/InsightCard.tsx**
+- Colored border + background based on type:
+  - positive: emerald
+  - tip: amber
+  - neutral: indigo
+- Emoji + text
+- Staggered animation delays
+
+### Progress Page
+
+**app/dashboard/progress/page.tsx** (Server Component)
+- Fetches last 30 days of mood entries
+- Calculates stats (avgBefore, avgAfter, improvement, streak)
+- Passes data to ProgressClient
+
+**components/progress/ProgressClient.tsx** (Client Component)
+- Header with streak badge (🔥 + days)
+- Stats row (4 cards):
+  - Avg Before (emoji + score)
+  - Avg After (emoji + score)
+  - Improvement (+X.X per session)
+  - Total Check-ins
+- AI Insights section (2×2 grid of InsightCards)
+- Tabbed content:
+  - **Graph** tab: MoodGraph with period toggle
+  - **Calendar** tab: MoodHeatmap
+  - **Triggers** tab: TopReasons chart
+- Recent Check-ins list (last 5 entries)
+
+### Design System
+
+**Typography:**
+- Headers: Fraunces (font-serif)
+- Body: Plus Jakarta Sans (font-sans)
+
+**Colors:**
+- Primary: #6366F1 (indigo)
+- Accent gradients: from-[#6366F1] to-[#818CF8]
+- Mood colors: emotion-specific (red → cyan scale)
+- Background: #FAFAF9 (cream)
+- Cards: white with glass-button class
+
+**Animations:**
+- Framer Motion for all transitions
+- Scale + translateY for emoji selection
+- Staggered delays for lists (index * 0.1)
+- Smooth path animations for graphs (pathLength: 0→1)
+- Fade-in-up for page entrance
+
+### Files Created
+
+**Backend:**
+- `lib/mood/data.ts` — Constants, types, helpers
+- `app/api/mood/route.ts` — POST + GET endpoints
+- `app/api/mood/insights/route.ts` — GET insights
+
+**Components:**
+- `components/mood/MoodCheckIn.tsx` — 3-step check-in flow
+- `components/mood/MoodGraph.tsx` — Line chart visualization
+- `components/mood/MoodHeatmap.tsx` — Calendar heatmap
+- `components/mood/TopReasons.tsx` — Horizontal bar chart
+- `components/mood/InsightCard.tsx` — Insight display card
+- `components/progress/ProgressClient.tsx` — Progress page client wrapper
+
+**Modified:**
+- `prisma/schema.prisma` — Added MoodEntry model
+- `app/dashboard/progress/page.tsx` — Server data fetching + ProgressClient
+
+### How It Works
+
+**Mood Check-in Flow:**
+```
+1. User clicks mood tracking (future: before/after session triggers)
+   ↓
+2. MoodCheckIn modal appears
+   ↓
+3. Step 1: Select emoji (1-7) → auto-advance after 400ms
+   ↓
+4. Step 2: Select reason tags (multi-select) → "Next" or "Done"
+   ↓
+5. Step 3: Optional note (textarea) → "Done"
+   ↓
+6. POST /api/mood { type, score, reasons, note, sessionId? }
+   ↓
+7. Save to database
+   ↓
+8. Update session.moodBefore or session.moodAfter if sessionId
+   ↓
+9. Return to dashboard → Progress page shows updated data
+```
+
+**Dashboard Data Flow:**
+```
+1. Server Component (page.tsx):
+   - Fetch last 30 days moodEntries from Prisma
+   - Calculate stats (avgBefore, avgAfter, improvement, streak)
+   - Pass to ProgressClient as props
+   ↓
+2. Client Component (ProgressClient.tsx):
+   - Fetch insights from /api/mood/insights
+   - Render stats cards
+   - Render insights grid
+   - Render tabbed content (Graph/Calendar/Triggers)
+   - Render recent check-ins list
+```
+
+**Streak Calculation:**
+- Get unique dates with entries
+- Sort descending
+- Check if consecutive (daysDiff === 1)
+- Current streak only counts if today or yesterday has entry
+- Best streak tracks all-time highest consecutive days
+
+### Future Enhancements
+
+**Planned (not implemented yet):**
+- [ ] Before/After session triggers in ChatWindow
+  - Before: Show MoodCheckIn on new conversation if no mood today
+  - After: Show MoodCheckIn when ending session (after 5+ messages)
+- [ ] Export mood data as CSV
+- [ ] Mood predictions based on patterns
+- [ ] Correlations: mood × time of day × reasons
+- [ ] LLM-generated insights (instead of hardcoded)
+- [ ] Mood journal entries integration (save to JournalEntry)
+- [ ] Mood notifications: "You haven't checked in today"
+
+### Stats & Metrics
+
+**Current implementation:**
+- 7-point emoji scale (1-7)
+- 12 reason tags
+- 3-step check-in flow
+- 4 visualization types (stats cards, graph, heatmap, bar chart)
+- Streak tracking (consecutive days)
+- AI insights (4 types)
+- Last 30 days window for analysis
+
+### Technical Details
+
+**Performance:**
+- Server-side data fetching (no loading states on page load)
+- Client-side insights fetch (non-blocking)
+- Optimized Prisma queries (single query for entries)
+- SVG visualizations (performant, scalable)
+
+**Security:**
+- Auth check on all API routes (first line)
+- Zod validation on POST /api/mood
+- User isolation (WHERE userId = user.id)
+
+**Data Privacy:**
+- Mood data stored per user
+- No cross-user data leakage
+- Delete cascade on user deletion
+
+### Commit
+
+```bash
+git add -A
+git commit -m "feat: mood tracking — 3-step check-in, graph, heatmap, triggers, AI insights"
+```
+
+---
+
 *Log maintained by Claude Code + Cursor*

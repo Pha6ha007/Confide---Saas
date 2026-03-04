@@ -2,7 +2,7 @@
 // Centralized mapping: AgentType → Pinecone Namespace
 
 import { AgentType } from '@/types'
-import { NAMESPACES, type Namespace } from './client'
+import { NAMESPACES, type Namespace } from './constants'
 
 /**
  * Maps each specialist agent to its corresponding Pinecone namespace

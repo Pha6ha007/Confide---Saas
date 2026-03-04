@@ -108,7 +108,73 @@ function estimateTokens(text: string): number {
 }
 
 /**
- * Разбить текст на чанки по 500 токенов с overlap 50
+ * Проверить является ли chunk "мусорным" (endorsements, TOC, copyright, etc.)
+ * @returns true если chunk нужно пропустить
+ */
+function isJunkChunk(text: string): boolean {
+  const lowerText = text.toLowerCase()
+
+  // Паттерны мусорных chunks
+  const junkPatterns = [
+    // Endorsements / praise
+    /praise for|acclaim for|what (?:people|readers|critics) are saying/i,
+    /^"\s*[^"]{20,200}"\s*—\s*[A-Z]/i, // Quote with attribution (likely endorsement)
+    /highly recommend|must-read|essential reading|groundbreaking work/i,
+
+    // Table of contents
+    /^contents?\s*$/i,
+    /^chapter \d+/i,
+    /^part [ivxlc]+:/i,
+    /^\d+\.\s+[A-Z][^.]{10,50}\s+\d+$/m, // "1. Chapter Title 23"
+
+    // "Also by" lists
+    /^also by|by the same author|other books by/i,
+    /^works by [a-z\s]+:/i,
+
+    // Copyright / publication info
+    /copyright ©|all rights reserved/i,
+    /published by|printing history/i,
+    /library of congress|isbn|cataloging-in-publication/i,
+    /^\s*©\s*\d{4}/,
+
+    // Preface boilerplate
+    /^this book is dedicated to/i,
+    /^about the author/i,
+    /^acknowledgments?/i,
+
+    // Index / bibliography fragments
+    /^index\s*$/i,
+    /^bibliography/i,
+    /^references?\s*$/i,
+
+    // Empty or too short (less than 50 chars)
+    /^\s*.{0,50}\s*$/,
+  ]
+
+  // Проверить все паттерны
+  for (const pattern of junkPatterns) {
+    if (pattern.test(text)) {
+      return true
+    }
+  }
+
+  // Дополнительная проверка: слишком много заглавных букв (вероятно заголовок)
+  const upperCaseRatio = (text.match(/[A-Z]/g) || []).length / text.length
+  if (upperCaseRatio > 0.3 && text.length < 200) {
+    return true
+  }
+
+  // Дополнительная проверка: слишком много цифр (вероятно TOC или index)
+  const digitRatio = (text.match(/\d/g) || []).length / text.length
+  if (digitRatio > 0.15 && text.length < 300) {
+    return true
+  }
+
+  return false
+}
+
+/**
+ * Разбить текст на чанки по 800 токенов с overlap 150
  */
 function chunkText(text: string, chunkSize: number, overlap: number): ChunkData[] {
   const words = text.split(/\s+/)
@@ -123,12 +189,19 @@ function chunkText(text: string, chunkSize: number, overlap: number): ChunkData[
     const wordTokens = estimateTokens(word)
 
     if (currentTokens + wordTokens > chunkSize && currentChunk.length > 0) {
-      // Сохранить текущий чанк
-      chunks.push({
-        text: currentChunk.join(' '),
-        index: chunkIndex,
-      })
-      chunkIndex++
+      // Сохранить текущий чанк (если не мусорный)
+      const chunkText = currentChunk.join(' ')
+
+      if (!isJunkChunk(chunkText)) {
+        chunks.push({
+          text: chunkText,
+          index: chunkIndex,
+        })
+        chunkIndex++
+      } else {
+        // Log filtered junk chunk (только первые 100 символов)
+        console.log(`   [FILTERED] Junk chunk: "${chunkText.slice(0, 100)}..."`)
+      }
 
       // Начать новый чанк с overlap
       const overlapWords = Math.floor((overlap / chunkSize) * currentChunk.length)
@@ -142,10 +215,16 @@ function chunkText(text: string, chunkSize: number, overlap: number): ChunkData[
 
   // Последний чанк
   if (currentChunk.length > 0) {
-    chunks.push({
-      text: currentChunk.join(' '),
-      index: chunkIndex,
-    })
+    const chunkText = currentChunk.join(' ')
+
+    if (!isJunkChunk(chunkText)) {
+      chunks.push({
+        text: chunkText,
+        index: chunkIndex,
+      })
+    } else {
+      console.log(`   [FILTERED] Junk chunk: "${chunkText.slice(0, 100)}..."`)
+    }
   }
 
   return chunks

@@ -1,5 +1,6 @@
 import OpenAI from 'openai'
 import { getPineconeIndex, type Namespace } from './client'
+import { rerankChunks, type RetrievedChunk, type RerankedChunk } from './reranker'
 
 // Lazy initialization - создаём клиент только при первом обращении
 let _openai: OpenAI | null = null
@@ -19,17 +20,8 @@ const EMBEDDING_MODEL = 'text-embedding-3-small'
 // Модель для query expansion (быстрая и дешёвая)
 const EXPANSION_MODEL = 'gpt-4o-mini'
 
-export interface RetrievedChunk {
-  id: string
-  score: number
-  text: string
-  metadata: {
-    book_title: string
-    author: string
-    chapter?: string
-    namespace: string
-  }
-}
+// Re-export types for consumers
+export type { RetrievedChunk, RerankedChunk }
 
 /**
  * Расширить запрос пользователя в набор релевантных психологических терминов
@@ -102,18 +94,25 @@ Output: relationship conflict marriage problems communication breakdown emotiona
 }
 
 /**
- * Получить релевантный контекст из RAG базы знаний
+ * Получить релевантный контекст из RAG базы знаний с reranking
+ *
+ * Процесс:
+ * 1. Query Expansion — расширить запрос для лучшего semantic search
+ * 2. Pinecone Retrieval — получить top-15 candidates
+ * 3. Cross-Encoder Reranking — LLM оценивает relevance, возвращает top-5
  *
  * @param query - Запрос пользователя
  * @param namespace - Namespace для поиска (anxiety_cbt, family, trauma, etc)
- * @param topK - Сколько чанков вернуть (по умолчанию 10, увеличено с 5)
- * @returns Массив релевантных чанков с metadata
+ * @param topK - Сколько чанков вернуть после reranking (по умолчанию 5)
+ * @param useReranking - Включить reranking (по умолчанию true)
+ * @returns Массив reranked чанков с metadata
  */
 export async function retrieveContext(
   query: string,
   namespace: Namespace,
-  topK: number = 10
-): Promise<RetrievedChunk[]> {
+  topK: number = 5,
+  useReranking: boolean = true
+): Promise<RerankedChunk[]> {
   try {
     // 1. Расширить запрос для улучшения semantic search
     const expandedQuery = await expandQuery(query, namespace)
@@ -136,10 +135,13 @@ export async function retrieveContext(
     const queryEmbedding = embeddingResponse.data[0].embedding
 
     // 3. Поиск в Pinecone по namespace
+    // Получаем top-15 candidates для reranking (или topK если reranking выключен)
+    const retrievalTopK = useReranking ? Math.max(topK * 3, 15) : topK
+
     const index = getPineconeIndex()
     const queryResponse = await index.namespace(namespace).query({
       vector: queryEmbedding,
-      topK,
+      topK: retrievalTopK,
       includeMetadata: true,
     })
 
@@ -158,7 +160,21 @@ export async function retrieveContext(
         },
       }))
 
-    return chunks
+    // 5. Rerank если включено
+    if (useReranking && chunks.length > topK) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[RAG] Reranking ${chunks.length} candidates → top ${topK}`)
+      }
+
+      const rerankedChunks = await rerankChunks(query, chunks, topK)
+      return rerankedChunks
+    }
+
+    // Без reranking — возвращаем как есть с rerankScore = pinecone score
+    return chunks.slice(0, topK).map((chunk) => ({
+      ...chunk,
+      rerankScore: chunk.score * 10, // Normalize to 0-10 scale
+    }))
   } catch (error) {
     console.error('Failed to retrieve context from Pinecone:', error)
     return []

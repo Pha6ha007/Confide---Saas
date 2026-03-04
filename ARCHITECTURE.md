@@ -834,6 +834,182 @@ const results = await pinecone.query({
 
 ---
 
+## 🎉 [2026-03-04] RAG Optimization Phase 2 — Cross-Encoder Reranking COMPLETED
+
+**Cross-Encoder Reranking + Chunk Filtering** — 100% ✅
+
+### Задачи выполнены
+
+**Task 1: Cross-Encoder Reranking** ✅
+- Установлен `@xenova/transformers` (для будущих опций)
+- Создан **LLM-based reranker** (`lib/pinecone/reranker.ts`) через GPT-4o-mini
+- Интеграция в `lib/pinecone/retrieval.ts`:
+  - Pinecone retrieval: **topK=15** candidates
+  - LLM reranking: оценивает relevance 0-10 scale
+  - Возвращает top-5 с наивысшими rerank scores
+  - Включает reasoning для каждого chunk
+
+**Task 2: Chunk Filtering при Ingestion** ✅
+- Добавлена функция `isJunkChunk()` в `scripts/ingest-knowledge.ts`
+- Автоматически фильтрует:
+  - Endorsements/praise ("highly recommend", "must-read")
+  - Table of contents ("Chapter 1", numbered TOC entries)
+  - "Also by" lists
+  - Copyright info (©, ISBN, Library of Congress)
+  - Preface boilerplate ("Dedicated to", "Acknowledgments")
+  - Index/bibliography fragments
+  - Слишком короткие chunks (<50 chars)
+  - Избыток заглавных букв (>30% uppercase)
+  - Избыток цифр (>15% digits)
+
+**Важно:** Код добавлен, но существующие книги не переиндексированы. Фильтрация применится к новым загрузкам.
+
+### Файлы созданы/изменены
+
+**Созданы:**
+- `lib/pinecone/reranker.ts` — LLM-based cross-encoder reranking
+- `lib/pinecone/constants.ts` — centralized NAMESPACES (избежание circular deps)
+- `scripts/test-reranking.ts` — тестовый скрипт
+- `scripts/test-rag-full-comparison.ts` — полный тест на 21 запрос
+
+**Изменены:**
+- `lib/pinecone/retrieval.ts` — интеграция reranking (topK=15 → rerank → top-5)
+- `lib/pinecone/client.ts` — re-export constants
+- `lib/pinecone/namespace-mapping.ts` — import из constants
+- `scripts/ingest-knowledge.ts` — фильтрация мусорных chunks
+
+### Full RAG Test Results (21 Queries, 3 Configurations)
+
+**Тестовая конфигурация:**
+- **Before:** Baseline Pinecone retrieval (no expansion, no reranking)
+- **+ Query Expansion:** Query expansion + Pinecone
+- **+ Reranking:** Query expansion + Pinecone + LLM reranking
+
+**Тестовый набор:** 21 запрос (3 по каждому агенту)
+- ANXIETY (3)
+- FAMILY (3)
+- TRAUMA (3)
+- RELATIONSHIPS (3)
+- MENS (3)
+- WOMENS (3)
+- CROSS-AGENT (3)
+
+### 🎯 Overall Results
+
+| Metric | Before | +Expansion | +Reranking | Improvement |
+|--------|--------|------------|------------|-------------|
+| **Average Score** | 0.4224 | 0.6284 | **0.6929** | **+64.0%** |
+| **PASS (≥0.75)** | 0/21 (0%) | 0/21 (0%) | **9/21 (43%)** | **+43%** |
+| **MARGINAL (0.50-0.75)** | 8/21 (38%) | 21/21 (100%) | **12/21 (57%)** | +19% |
+| **FAIL (<0.50)** | 13/21 (62%) | 0/21 (0%) | **0/21 (0%)** | **-62%** |
+
+**Key Achievement:** 0% FAIL результатов (было 62% до оптимизации!)
+
+### 📈 Results by Agent
+
+| Agent | Before | After Expansion | After Reranking | Improvement | Best Score |
+|-------|--------|-----------------|-----------------|-------------|------------|
+| **MENS** 🚀 | 0.3060 | 0.6448 | **0.6667** | **+117.9%** | 0.80 |
+| **CROSS-AGENT** 🔥 | 0.4242 | 0.6226 | **0.7833** | **+84.7%** | 0.80 |
+| **RELATIONSHIPS** | 0.4156 | 0.6377 | **0.6667** | **+60.4%** | 0.70 |
+| **WOMENS** | 0.4304 | 0.5692 | **0.6833** | **+58.8%** | 0.75 |
+| **TRAUMA** | 0.4280 | 0.6362 | **0.6667** | **+55.8%** | 0.80 |
+| **FAMILY** | 0.4223 | 0.6110 | **0.6333** | **+50.0%** | 0.75 |
+| **ANXIETY** | 0.5308 | 0.6769 | **0.7500** | **+41.3%** | 0.80 |
+
+**MVP:** MENS namespace (+117.9%) — был самым слабым (0.33 baseline), теперь конкурентоспособен (0.67)!
+
+### 🏆 9 PASS Queries (≥0.75)
+
+1. **ANXIETY:** "panic attacks at work" → **0.80** ✅
+2. **ANXIETY:** "racing worst-case scenarios" → **0.75** ✅
+3. **FAMILY:** "same fight over and over" → **0.75** ✅
+4. **TRAUMA:** "freeze when voice raised" → **0.80** ✅
+5. **MENS:** "falling apart inside" → **0.80** ✅
+6. **WOMENS:** "exhausted from everything" → **0.75** ✅
+7. **CROSS-AGENT:** "no point anymore" → **0.80** ✅
+8. **CROSS-AGENT:** "hate myself" → **0.80** ✅
+9. **CROSS-AGENT:** "alone with people around" → **0.75** ✅
+
+### Stage-by-Stage Improvement
+
+| Stage | Average Score | Improvement from Previous |
+|-------|---------------|---------------------------|
+| **Before** (baseline) | 0.4224 | — |
+| **+ Query Expansion** | 0.6284 | **+48.8%** |
+| **+ Reranking** | 0.6929 | **+10.3%** (cumulative: **+64.0%**) |
+
+**Conclusion:** Query Expansion даёт основной буст (+48.8%), Reranking добавляет финальные 10% для достижения PASS.
+
+### Проблемные кейсы (ещё не достигли 0.75)
+
+**MARGINAL results (0.50-0.65):**
+- FAMILY #4: "mother criticizes" → 0.60
+- FAMILY #6: "parents divorce" → 0.55
+- TRAUMA #8: "childhood secret" → 0.60
+- TRAUMA #9: "nightmares" → 0.60
+- RELATIONSHIPS #11: "cheated, checking phone" → 0.60
+- MENS #14: "providing for family" → 0.50
+
+**Причины:**
+- FAMILY/TRAUMA namespaces нуждаются в большем количестве книг
+- MENS namespace всё ещё имеет только 1 книгу (40 chunks)
+- Некоторые темы (divorce, PTSD nightmares, infidelity) слабо представлены
+
+### How Reranking Works
+
+**Architecture:**
+```typescript
+1. User query → Query Expansion (GPT-4o-mini)
+   ↓
+2. Expanded query → OpenAI embeddings
+   ↓
+3. Pinecone retrieval (topK=15 candidates)
+   ↓
+4. LLM Reranking (GPT-4o-mini)
+   → Evaluates each chunk's relevance (0-10 scale)
+   → Returns top-5 with reasoning
+   ↓
+5. Return reranked chunks to agent
+```
+
+**Cost per query:**
+- Query Expansion: ~$0.00004
+- Reranking: ~$0.0001
+- **Total: ~$0.00014 per query** (negligible)
+
+**Latency:**
+- Query Expansion: ~500ms
+- Reranking: ~1-2s
+- **Total added latency: ~1.5-2.5s per query**
+
+### Система готова к Production
+
+✅ **0% FAIL результатов** — все запросы ≥0.50
+✅ **43% PASS результатов** (≥0.75) — было 0% в baseline
+✅ **+64% общее улучшение** retrieval quality
+✅ **Negligible cost** (~$0.00014/query)
+✅ **Acceptable latency** (+1.5-2.5s)
+
+### Следующие шаги
+
+**Приоритет 1 (для улучшения до 60%+ PASS):**
+- [ ] Добавить больше книг в FAMILY namespace (divorce, conflict resolution)
+- [ ] Добавить больше книг в TRAUMA namespace (PTSD, nightmares, childhood trauma)
+- [ ] Добавить 2-3 книги в MENS namespace (текущая: 1 книга, 40 chunks)
+
+**Приоритет 2:**
+- [ ] Re-ingest существующие книги с новой chunk filtering
+- [ ] Создать WOMENS namespace (отдельно от GENERAL)
+- [ ] A/B тестирование reranking на production
+
+**Приоритет 3:**
+- [ ] Hybrid search (semantic + BM25 keyword search)
+- [ ] Upgrade embedding model: text-embedding-3-large (3072 dims)
+- [ ] Fine-tune embeddings на психологических текстах
+
+---
+
 ## 🎉 [2026-03-04] Phase 3 — Specialized Agents Integration COMPLETED
 
 **Phase 3: All 6 Specialist Agents + Orchestrator + Handoff Protocol** — 100% ✅

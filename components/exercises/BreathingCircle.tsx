@@ -141,7 +141,7 @@ export function BreathingCircle({
         {/* Content */}
         <div className="relative z-10 text-center">
           <motion.p
-            className="font-serif text-2xl mb-2"
+            className="font-serif text-base font-medium mb-2"
             style={{ color }}
             key={phaseName}
             initial={{ opacity: 0, y: -10 }}

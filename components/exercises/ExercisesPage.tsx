@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { X, Play, Pause, Square, ChevronLeft } from 'lucide-react'
@@ -29,25 +29,9 @@ export function ExercisesPage({ startExerciseId }: ExercisesPageProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | 'all'>('all')
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null)
-  const [currentCycle, setCurrentCycle] = useState(0)
-  const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0)
-  const [elapsed, setElapsed] = useState(0) // seconds elapsed in current phase
+  const [totalElapsed, setTotalElapsed] = useState(0) // total seconds elapsed in entire exercise
   const [isPaused, setIsPaused] = useState(false)
   const [countdown, setCountdown] = useState(3)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Use refs to access current values inside interval without causing re-renders
-  const currentCycleRef = useRef(currentCycle)
-  const currentPhaseIndexRef = useRef(currentPhaseIndex)
-
-  // Update refs when state changes
-  useEffect(() => {
-    currentCycleRef.current = currentCycle
-  }, [currentCycle])
-
-  useEffect(() => {
-    currentPhaseIndexRef.current = currentPhaseIndex
-  }, [currentPhaseIndex])
 
   // Handle deep linking from chat
   useEffect(() => {
@@ -64,12 +48,49 @@ export function ExercisesPage({ startExerciseId }: ExercisesPageProps) {
   const filteredExercises =
     selectedCategory === 'all' ? ALL_EXERCISES : getExercisesByCategory(selectedCategory)
 
-  // Current phase data
-  const currentPhase = selectedExercise?.phases[currentPhaseIndex]
-  const progress = currentPhase ? elapsed / currentPhase.duration : 0
+  // Calculate current cycle and phase from totalElapsed
+  const getCurrentState = () => {
+    if (!selectedExercise) return null
+
+    const phases = selectedExercise.phases
+    const cycleLength = phases.reduce((sum, p) => sum + p.duration, 0)
+    const totalDuration = cycleLength * selectedExercise.cycles
+
+    // Check if exercise is complete
+    if (totalElapsed >= totalDuration) {
+      return { isComplete: true, currentCycle: 0, currentPhaseIndex: 0, elapsed: 0, progress: 1 }
+    }
+
+    const currentCycle = Math.floor(totalElapsed / cycleLength)
+    const elapsedInCycle = totalElapsed - currentCycle * cycleLength
+
+    let accumulatedTime = 0
+    let currentPhaseIndex = 0
+
+    for (let i = 0; i < phases.length; i++) {
+      if (elapsedInCycle < accumulatedTime + phases[i].duration) {
+        currentPhaseIndex = i
+        break
+      }
+      accumulatedTime += phases[i].duration
+    }
+
+    const currentPhase = phases[currentPhaseIndex]
+    const elapsed = elapsedInCycle - accumulatedTime
+    const progress = elapsed / currentPhase.duration
+
+    return { isComplete: false, currentCycle, currentPhaseIndex, elapsed, progress, currentPhase }
+  }
+
+  const currentState = getCurrentState()
+  const currentCycle = currentState?.currentCycle ?? 0
+  const currentPhaseIndex = currentState?.currentPhaseIndex ?? 0
+  const currentPhase = currentState?.currentPhase ?? selectedExercise?.phases[0]
+  const progress = currentState?.progress ?? 0
+  const elapsed = currentState?.elapsed ?? 0
 
   // Get current guided prompt (if exercise has them)
-  const getCurrentPrompt = useCallback(() => {
+  const getCurrentPrompt = () => {
     if (!selectedExercise) return null
 
     // Sensory prompts (5-4-3-2-1)
@@ -90,7 +111,7 @@ export function ExercisesPage({ startExerciseId }: ExercisesPageProps) {
     }
 
     return null
-  }, [selectedExercise, currentCycle])
+  }
 
   // Timer logic
   useEffect(() => {
@@ -98,67 +119,22 @@ export function ExercisesPage({ startExerciseId }: ExercisesPageProps) {
       return
     }
 
-    console.log('🎯 Starting exercise timer...')
+    const phases = selectedExercise.phases
+    const cycleLength = phases.reduce((sum, p) => sum + p.duration, 0)
+    const totalDuration = cycleLength * selectedExercise.cycles
 
-    intervalRef.current = setInterval(() => {
-      setElapsed((prevElapsed) => {
-        const currentPhaseIdx = currentPhaseIndexRef.current
-        const currentCycleNum = currentCycleRef.current
-        const phases = selectedExercise.phases
-        const totalCycles = selectedExercise.cycles
+    console.log('🎯 Starting exercise timer...', { totalDuration, cycleLength })
 
-        if (!phases || currentPhaseIdx >= phases.length) {
-          console.error('Invalid phase index:', currentPhaseIdx)
-          return prevElapsed
-        }
+    const interval = setInterval(() => {
+      setTotalElapsed((prev) => {
+        const newElapsed = prev + 0.05
 
-        const currentPhase = phases[currentPhaseIdx]
-        const newElapsed = prevElapsed + 0.05
-
-        console.log('⏱️ Timer tick:', {
-          elapsed: newElapsed.toFixed(2),
-          phaseDuration: currentPhase.duration,
-          phaseIndex: currentPhaseIdx,
-          cycle: currentCycleNum,
-          view: viewMode,
-        })
-
-        // Phase complete
-        if (newElapsed >= currentPhase.duration) {
-          const isLastPhase = currentPhaseIdx === phases.length - 1
-
-          if (isLastPhase) {
-            // Cycle complete
-            const isLastCycle = currentCycleNum === totalCycles - 1
-
-            if (isLastCycle) {
-              // Exercise complete!
-              console.log('🎉 Exercise completed! Switching to completion screen...')
-              if (intervalRef.current) {
-                clearInterval(intervalRef.current)
-                intervalRef.current = null
-              }
-              requestAnimationFrame(() => {
-                setViewMode('completed')
-              })
-              return 0
-            } else {
-              // Next cycle
-              console.log(
-                `✅ Cycle ${currentCycleNum + 1} complete. Starting cycle ${currentCycleNum + 2}...`
-              )
-              setCurrentCycle(currentCycleNum + 1)
-              setCurrentPhaseIndex(0)
-              return 0
-            }
-          } else {
-            // Next phase
-            console.log(
-              `➡️ Phase ${currentPhaseIdx + 1} complete. Moving to phase ${currentPhaseIdx + 2}...`
-            )
-            setCurrentPhaseIndex(currentPhaseIdx + 1)
-            return 0
-          }
+        // Check if exercise is complete
+        if (newElapsed >= totalDuration) {
+          console.log('ALL CYCLES DONE')
+          console.log('🎉 Exercise completed! Switching to completion screen...')
+          setViewMode('completed')
+          return totalDuration
         }
 
         return newElapsed
@@ -167,12 +143,9 @@ export function ExercisesPage({ startExerciseId }: ExercisesPageProps) {
 
     return () => {
       console.log('🛑 Cleaning up timer...')
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
+      clearInterval(interval)
     }
-  }, [viewMode, isPaused, selectedExercise?.id]) // Only re-create when these change
+  }, [viewMode, isPaused, selectedExercise])
 
   // Countdown timer
   useEffect(() => {
@@ -194,9 +167,7 @@ export function ExercisesPage({ startExerciseId }: ExercisesPageProps) {
   }
 
   const handleBegin = () => {
-    setCurrentCycle(0)
-    setCurrentPhaseIndex(0)
-    setElapsed(0)
+    setTotalElapsed(0)
     setCountdown(3)
     setViewMode('countdown')
   }
@@ -205,27 +176,13 @@ export function ExercisesPage({ startExerciseId }: ExercisesPageProps) {
   const handleResume = () => setIsPaused(false)
 
   const handleStop = () => {
-    // Clear interval to ensure no orphaned timers
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
     setViewMode('detail')
-    setCurrentCycle(0)
-    setCurrentPhaseIndex(0)
-    setElapsed(0)
+    setTotalElapsed(0)
     setIsPaused(false)
   }
 
   const handleRestart = () => {
-    // Clear interval before restarting
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
-    setCurrentCycle(0)
-    setCurrentPhaseIndex(0)
-    setElapsed(0)
+    setTotalElapsed(0)
     setIsPaused(false)
     setCountdown(3)
     setViewMode('countdown')
@@ -234,9 +191,7 @@ export function ExercisesPage({ startExerciseId }: ExercisesPageProps) {
   const handleBackToList = () => {
     setViewMode('list')
     setSelectedExercise(null)
-    setCurrentCycle(0)
-    setCurrentPhaseIndex(0)
-    setElapsed(0)
+    setTotalElapsed(0)
     setIsPaused(false)
   }
 
@@ -496,11 +451,11 @@ export function ExercisesPage({ startExerciseId }: ExercisesPageProps) {
             className="max-w-3xl mx-auto"
           >
             {/* Header */}
-            <div className="grid grid-cols-3 items-center w-full px-6 py-4 mb-8">
+            <div className="relative flex items-center justify-between w-full px-6 py-4 mb-8">
               {/* Left: Back button */}
               <button
                 onClick={handleStop}
-                className="text-sm transition-colors justify-self-start"
+                className="text-sm transition-colors"
                 style={{ color: '#6B7280' }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = '#1F2937')}
                 onMouseLeave={(e) => (e.currentTarget.style.color = '#6B7280')}
@@ -509,12 +464,12 @@ export function ExercisesPage({ startExerciseId }: ExercisesPageProps) {
               </button>
 
               {/* Center: Exercise name */}
-              <h2 className="font-serif text-lg font-semibold text-center" style={{ color: '#1F2937' }}>
+              <h2 className="font-serif text-lg font-semibold absolute left-1/2 -translate-x-1/2" style={{ color: '#1F2937' }}>
                 {selectedExercise.name}
               </h2>
 
               {/* Right: Cycle indicator */}
-              <span className="text-sm justify-self-end" style={{ color: '#6B7280' }}>
+              <span className="text-sm" style={{ color: '#6B7280' }}>
                 {currentCycle + 1}/{selectedExercise.cycles}
               </span>
             </div>

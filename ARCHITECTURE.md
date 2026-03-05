@@ -18,7 +18,9 @@
 
 - [CLAUDE.md](./CLAUDE.md) — **Главный гайд проекта** (читать полностью перед работой)
 - [docs/DECISIONS.md](./docs/DECISIONS.md) — Почему выбраны конкретные технологии
-- [docs/changelog/](./docs/changelog/) — Хронология разработки по дням
+- [docs/CRON.md](./docs/CRON.md) — Vercel Cron Jobs (автоматические фоновые задачи)
+- [docs/RAG_BOOK_UPLOAD_GUIDE.md](./docs/RAG_BOOK_UPLOAD_GUIDE.md) — Гайд по загрузке книг в RAG
+- [docs/changelog/](./docs/changelog/) — Хронология разработки по дням ([README](./docs/changelog/README.md))
 
 ### Ключевые файлы
 
@@ -155,6 +157,71 @@
 
 ---
 
+## Vercel Cron Jobs
+
+### Автоматическая генерация дневников
+
+**Schedule:** `0 6 1 * *` (6:00 UTC на 1 число каждого месяца)
+**Endpoint:** `GET /api/cron/generate-diaries`
+**Статус:** ✅ Реализовано (март 2026)
+
+#### Как это работает
+
+1. **1 число месяца** в 6:00 UTC Vercel автоматически вызывает endpoint
+2. Находит всех пользователей с **сессиями в предыдущем месяце**
+3. Параллельно генерирует PDF дневники через `lib/diary/service.ts`
+4. Загружает PDF в Supabase Storage (`diaries` bucket)
+5. Возвращает статистику: `generated` / `skipped` / `errors`
+
+#### Security
+
+- **CRON_SECRET** — Bearer token authentication
+- Header: `Authorization: Bearer {CRON_SECRET}`
+- Защита от внешних вызовов (только Vercel может вызвать)
+
+#### Error Handling
+
+- **Batch processing** — `Promise.allSettled` для параллельной генерации
+- Если генерация упала для одного пользователя → продолжает для остальных
+- Собирает `errorDetails` массив с userId + error message
+- **Идемпотентность** — пропускает если дневник уже существует (status: ready)
+
+#### Мониторинг
+
+**Vercel Dashboard:**
+- Settings → Crons — список зарегистрированных cron jobs
+- Functions → Logs — логи выполнения cron endpoint
+
+**Response format:**
+```json
+{
+  "success": true,
+  "message": "Diary generation completed for 2026-2",
+  "month": 2,
+  "year": 2026,
+  "totalUsers": 12,
+  "generated": 10,
+  "skipped": 2,
+  "errors": 0
+}
+```
+
+#### Тестирование локально
+
+```bash
+# Ручной вызов cron endpoint
+curl -H "Authorization: Bearer ${CRON_SECRET}" \
+  http://localhost:3000/api/cron/generate-diaries
+```
+
+#### Файлы
+
+- `vercel.json` — cron конфигурация
+- `app/api/cron/generate-diaries/route.ts` — endpoint
+- `lib/diary/service.ts` — переиспользуемая логика генерации
+
+---
+
 ## Монетизация
 
 | Plan | Price | Sessions | Voice | Agents | Analytics |
@@ -208,6 +275,9 @@ npx tsx scripts/ingest-knowledge.ts --file="book.pdf" --namespace="anxiety_cbt"
 
 # Tests
 npx tsx scripts/test-rag-full-comparison.ts
+
+# Cron Jobs (тестирование)
+curl -H "Authorization: Bearer ${CRON_SECRET}" http://localhost:3000/api/cron/generate-diaries
 ```
 
 ### Агенты разработки

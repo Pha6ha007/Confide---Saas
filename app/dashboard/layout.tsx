@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, BookOpen, TrendingUp, Settings, LogOut, Crown, Sparkles } from 'lucide-react'
+import InstallPrompt from '@/components/pwa/InstallPrompt'
 
 async function signOut() {
   'use server'
@@ -133,6 +134,9 @@ export default async function DashboardLayout({
       <main className="flex-1 overflow-auto">
         {children}
       </main>
+
+      {/* PWA Install Prompt */}
+      <InstallPrompt />
     </div>
   )
 }

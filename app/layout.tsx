@@ -20,6 +20,16 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: 'Confide — Someone who truly listens',
   description: 'AI companion for emotional support. Share your thoughts, explore your feelings, and grow in a safe, judgment-free space.',
+  manifest: '/manifest.json',
+  themeColor: '#6366F1',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Confide',
+  },
+  icons: {
+    apple: '/icons/icon-192x192.svg',
+  },
 }
 
 export default function RootLayout({
@@ -29,6 +39,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${plusJakartaSans.variable} ${fraunces.variable}`}>
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Confide" />
+      </head>
       <body className={plusJakartaSans.className}>
         {children}
         <Toaster />

@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BookOpen, Calendar, MessageCircle, Sparkles } from 'lucide-react'
+import { DiaryList } from '@/components/diary/DiaryList'
 
 export default async function JournalPage() {
   // Auth check
@@ -27,7 +28,7 @@ export default async function JournalPage() {
   const hasEntries = journalEntries.length > 0
 
   return (
-    <div className="max-w-4xl mx-auto p-8 space-y-8 animate-fade-in-up">
+    <div className="max-w-4xl mx-auto p-8 space-y-12 animate-fade-in-up">
       {/* Header */}
       <div>
         <h1 className="font-serif text-4xl font-semibold text-foreground">Your Journal</h1>
@@ -36,8 +37,27 @@ export default async function JournalPage() {
         </p>
       </div>
 
-      {/* Empty State */}
-      {!hasEntries && (
+      {/* Monthly Diaries Section */}
+      <section className="space-y-4">
+        <div className="border-t border-border pt-8">
+          <DiaryList />
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div className="border-t border-border" />
+
+      {/* Daily Insights Section */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="font-serif text-2xl font-semibold text-foreground">Daily Insights</h2>
+          <p className="text-muted-foreground mt-1">
+            Moments saved from your conversations
+          </p>
+        </div>
+
+        {/* Empty State */}
+        {!hasEntries && (
         <Card className="glass-button border border-white/20 shadow-large rounded-3xl transition-smooth hover-lift">
           <CardContent className="p-12 text-center">
             <div className="w-20 h-20 bg-gradient-to-br from-[#6366F1] to-[#818CF8] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -57,11 +77,11 @@ export default async function JournalPage() {
             </Link>
           </CardContent>
         </Card>
-      )}
+        )}
 
-      {/* Journal Entries List */}
-      {hasEntries && (
-        <div className="space-y-6">
+        {/* Journal Entries List */}
+        {hasEntries && (
+          <div className="space-y-6">
           {journalEntries.map((entry) => (
             <Card
               key={entry.id}
@@ -94,11 +114,11 @@ export default async function JournalPage() {
               </CardContent>
             </Card>
           ))}
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* Info Card внизу если есть записи */}
-      {hasEntries && (
+        {/* Info Card внизу если есть записи */}
+        {hasEntries && (
         <Card className="glass border border-white/20 rounded-2xl">
           <CardContent className="p-6">
             <div className="flex items-start space-x-3">
@@ -113,7 +133,8 @@ export default async function JournalPage() {
             </div>
           </CardContent>
         </Card>
-      )}
+        )}
+      </section>
     </div>
   )
 }

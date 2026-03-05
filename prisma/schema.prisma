@@ -159,7 +159,10 @@ model Diary {
   userId     String   @map("user_id") @db.Uuid
   month      Int      // 1-12
   year       Int      // 2026, 2027, etc
-  storageUrl String   @map("storage_url") // Supabase Storage URL
+  title      String   @default("") // "March 2026 — Your Journey"
+  status     String   @default("generating") // generating | ready | error
+  storageUrl String?  @map("storage_url") // Supabase Storage URL (nullable пока генерируется)
+  errorMessage String? @map("error_message") @db.Text // Сообщение об ошибке если status = error
   createdAt  DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

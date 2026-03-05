@@ -41,8 +41,14 @@ export async function GET(request: NextRequest) {
     const language = dbUser.language as 'en' | 'ru'
 
     // ============================================
-    // 3. ОПРЕДЕЛИТЬ ТИП ПРИВЕТСТВИЯ
+    // 3. ОПРЕДЕЛИТЬ ТИП ПРИВЕТСТВИЯ (с time-awareness)
     // ============================================
+    // Get time context for time-aware greetings
+    const now = new Date()
+    const hour = now.getHours()
+    const isLateNight = hour >= 23 || hour <= 4
+    const isMorning = hour >= 8 && hour <= 11
+
     const sessionsCount = await prisma.session.count({
       where: { userId: user.id },
     })
@@ -51,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     // Новый пользователь (нет сессий)
     if (sessionsCount === 0) {
-      greeting = getNewUserGreeting(companionName, preferredName, language)
+      greeting = getNewUserGreeting(companionName, preferredName, language, isLateNight, isMorning)
     }
     // Возвращающийся пользователь
     else {
@@ -74,9 +80,9 @@ export async function GET(request: NextRequest) {
       else if (followUp) {
         greeting = getFollowUpGreeting(companionName, preferredName, followUp, language)
       }
-      // Обычное приветствие
+      // Обычное приветствие (time-aware)
       else {
-        greeting = getRegularGreeting(companionName, preferredName, language)
+        greeting = getRegularGreeting(companionName, preferredName, language, isLateNight, isMorning)
       }
     }
 
@@ -101,11 +107,36 @@ export async function GET(request: NextRequest) {
 // GREETING GENERATORS
 // =============================================================================
 
-function getNewUserGreeting(companionName: string, preferredName: string | undefined, language: 'en' | 'ru'): string {
+function getNewUserGreeting(
+  companionName: string,
+  preferredName: string | undefined,
+  language: 'en' | 'ru',
+  isLateNight: boolean,
+  isMorning: boolean
+): string {
   if (language === 'ru') {
+    if (isLateNight) {
+      return preferredName
+        ? `Привет, ${preferredName}. Поздняя ночь?`
+        : `Привет. Поздняя ночь?`
+    } else if (isMorning) {
+      return preferredName
+        ? `Доброе утро, ${preferredName}. Как начинается день?`
+        : `Доброе утро. Как начинается день?`
+    }
     return preferredName
       ? `Привет, ${preferredName}! Я ${companionName}. Что у тебя на уме?`
       : `Привет! Я ${companionName}. Что у тебя на уме?`
+  }
+
+  if (isLateNight) {
+    return preferredName
+      ? `Hey ${preferredName}. Late one tonight?`
+      : `Hey. Late one tonight?`
+  } else if (isMorning) {
+    return preferredName
+      ? `Morning, ${preferredName}. How are you starting the day?`
+      : `Morning. How are you starting the day?`
   }
 
   return preferredName
@@ -165,9 +196,34 @@ function getFollowUpGreeting(
     : `Hey! How did "${followUp}" go?`
 }
 
-function getRegularGreeting(companionName: string, preferredName: string | undefined, language: 'en' | 'ru'): string {
+function getRegularGreeting(
+  companionName: string,
+  preferredName: string | undefined,
+  language: 'en' | 'ru',
+  isLateNight: boolean,
+  isMorning: boolean
+): string {
   if (language === 'ru') {
+    if (isLateNight) {
+      return preferredName
+        ? `Привет, ${preferredName}. Поздняя ночь. Что происходит?`
+        : `Привет. Поздняя ночь. Что происходит?`
+    } else if (isMorning) {
+      return preferredName
+        ? `Доброе утро, ${preferredName}! Как настроение?`
+        : `Доброе утро! Как настроение?`
+    }
     return preferredName ? `Привет, ${preferredName}! Что нового?` : `Привет! Что нового?`
+  }
+
+  if (isLateNight) {
+    return preferredName
+      ? `Hey ${preferredName}. Late night. What's going on?`
+      : `Hey. Late night. What's going on?`
+  } else if (isMorning) {
+    return preferredName
+      ? `Morning, ${preferredName}! How's the mood?`
+      : `Morning! How's the mood?`
   }
 
   return preferredName ? `Hey ${preferredName}! What's up?` : `Hey! What's up?`

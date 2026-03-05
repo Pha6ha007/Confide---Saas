@@ -20,6 +20,12 @@ interface MemoryExtractionResult {
   progress_notes: string | null // Признаки роста или изменений
   key_themes: string[] // Главные темы сессии
   follow_up: string | null // Что вспомнить на следующей сессии
+
+  // Memory Agent Upgrade (март 2026) — расширенная extraction
+  what_didnt_work: string[] // Что НЕ сработало в этой сессии
+  emotional_anchors: string[] // Метафоры/фразы которые зацепили пользователя
+  topic_connections: Record<string, string[]> // Связи между темами {"work": ["anxiety", "mom"]}
+  response_preference_note: string | null // Замечания о том какие ответы предпочитает
 }
 
 /**
@@ -62,7 +68,11 @@ Analyze this conversation and extract new information about the user. Return ONL
   "what_worked": "what helped them in this session (or null)",
   "progress_notes": "signs of growth or changes (or null)",
   "key_themes": ["main topics of this session"],
-  "follow_up": "what to remember for next session (or null)"
+  "follow_up": "what to remember for next session (or null)",
+  "what_didnt_work": ["what did NOT work in this session"],
+  "emotional_anchors": ["metaphors or phrases that deeply resonated"],
+  "topic_connections": {"topic": ["connected_topics"]},
+  "response_preference_note": "observations about response preferences (or null)"
 }
 
 IMPORTANT:
@@ -116,6 +126,40 @@ Your role is to analyze conversations and extract key information about the user
 - Things they said they'd try between sessions
 - Set to null if nothing specific
 
+---
+
+## ADDITIONAL EXTRACTION (Memory Agent Upgrade — март 2026):
+
+**what_didnt_work**: What did NOT work in this session
+- Techniques or approaches the user rejected or resisted
+- Moments where they said "I already know that" or "that's not what I need"
+- Times when Alex's response fell flat or missed the mark
+- Patterns of what doesn't land with this user
+- Examples: ["breathing exercise felt forced", "reframing didn't land — user prefers validation first", "humor was off during emotional moment"]
+- Set to empty array [] if nothing clearly didn't work
+
+**emotional_anchors**: Metaphors or phrases that deeply resonated
+- Moments where user said "that's exactly it" or "wow that hits"
+- Metaphors they repeated back in their own words (sign of internalization)
+- Ideas they returned to later in the conversation
+- Phrases that clearly landed emotionally
+- Examples: ["'Anxiety FM' metaphor resonated strongly", "the idea that anger protects sadness landed", "'smoke detector for toast' clicked"]
+- Set to empty array [] if no clear anchors
+
+**topic_connections**: Discovered connections between topics
+- Links the user made between different areas of their life
+- Patterns that emerged across multiple topics
+- Format: {"work": ["anxiety", "perfectionism"], "mom": ["guilt", "boundaries"]}
+- Only include connections explicitly made IN THIS SESSION
+- Set to empty object {} if no connections discovered
+
+**response_preference_note**: Observations about what type of responses they prefer
+- Do they engage more with questions or reflections?
+- Do they want validation first or direct exploration?
+- Do they prefer concrete advice or open-ended inquiry?
+- Examples: "responds better when Alex asks questions vs giving advice", "needs validation before exploration", "prefers concrete techniques over abstract concepts"
+- Set to null if no clear pattern
+
 ## Guidelines:
 
 - Be specific, not generic
@@ -168,6 +212,40 @@ function buildRussianMemoryPrompt(): string {
 - Вопросы которые они хотят изучить глубже
 - Что они сказали что попробуют между сессиями
 - Установи null если ничего конкретного
+
+---
+
+## ДОПОЛНИТЕЛЬНАЯ ЭКСТРАКЦИЯ (Memory Agent Upgrade — март 2026):
+
+**what_didnt_work**: Что НЕ сработало в этой сессии
+- Техники или подходы которые пользователь отверг или сопротивлялся
+- Моменты где они сказали "я это уже знаю" или "мне не это нужно"
+- Случаи когда ответ Alex не зашёл или промахнулся
+- Паттерны того что не работает с этим пользователем
+- Примеры: ["дыхательное упражнение показалось навязанным", "рефрейминг не зашёл — пользователь хочет сначала валидацию", "юмор был неуместен в эмоциональный момент"]
+- Установи пустой массив [] если ничего явно не сработало
+
+**emotional_anchors**: Метафоры или фразы которые глубоко резонировали
+- Моменты где пользователь сказал "вот именно" или "точно подмечено"
+- Метафоры которые они повторили своими словами (признак усвоения)
+- Идеи к которым они вернулись позже в разговоре
+- Фразы которые явно зацепили эмоционально
+- Примеры: ["метафора 'Радио Тревоги' сильно зашла", "идея что гнев защищает грусть попала в точку", "'дымовая сигнализация на тост' кликнула"]
+- Установи пустой массив [] если нет явных якорей
+
+**topic_connections**: Обнаруженные связи между темами
+- Связи которые пользователь провёл между разными областями жизни
+- Паттерны которые проявились через несколько тем
+- Формат: {"работа": ["тревога", "перфекционизм"], "мама": ["вина", "границы"]}
+- Только связи явно сделанные В ЭТОЙ СЕССИИ
+- Установи пустой объект {} если связей не обнаружено
+
+**response_preference_note**: Наблюдения о том какие типы ответов предпочитают
+- Больше вовлекаются в вопросы или рефлексии?
+- Нужна сначала валидация или сразу исследование?
+- Предпочитают конкретные советы или открытые вопросы?
+- Примеры: "лучше отвечает когда Alex задаёт вопросы а не даёт советы", "нужна валидация перед исследованием", "предпочитает конкретные техники а не абстрактные концепции"
+- Установи null если нет явного паттерна
 
 ## Правила:
 
@@ -251,6 +329,9 @@ export function mergeProfileWithExtraction(
     patterns: [],
     progress: {},
     whatWorked: [],
+    whatDidntWork: [],
+    emotionalAnchors: [],
+    topicConnections: {},
   }
 
   // Communication style
@@ -260,6 +341,10 @@ export function mergeProfileWithExtraction(
   if (extraction.communication_style_notes) {
     updatedCommunicationStyle.latest_observation =
       extraction.communication_style_notes
+  }
+  if (extraction.response_preference_note) {
+    updatedCommunicationStyle.response_preference =
+      extraction.response_preference_note
   }
 
   // Emotional profile
@@ -277,10 +362,39 @@ export function mergeProfileWithExtraction(
   ]
 
   // What worked
-  const existingWhatWorked = base.whatWorked || []
+  const existingWhatWorked = (base.whatWorked as string[]) || []
   const mergedWhatWorked = extraction.what_worked
     ? [...existingWhatWorked, extraction.what_worked]
     : existingWhatWorked
+
+  // What didn't work (NEW)
+  const existingWhatDidntWork = (base.whatDidntWork as string[]) || []
+  const mergedWhatDidntWork = [
+    ...existingWhatDidntWork,
+    ...extraction.what_didnt_work,
+  ]
+
+  // Emotional anchors (NEW)
+  const existingAnchors = (base.emotionalAnchors as string[]) || []
+  const mergedAnchors = [
+    ...new Set([...existingAnchors, ...extraction.emotional_anchors]),
+  ]
+
+  // Topic connections (NEW) — merge objects
+  const existingConnections = (base.topicConnections as Record<
+    string,
+    string[]
+  >) || {}
+  const mergedConnections = { ...existingConnections }
+  Object.entries(extraction.topic_connections).forEach(([topic, connections]) => {
+    if (mergedConnections[topic]) {
+      mergedConnections[topic] = [
+        ...new Set([...mergedConnections[topic], ...connections]),
+      ]
+    } else {
+      mergedConnections[topic] = connections
+    }
+  })
 
   // Progress notes
   const progress = (base.progress as any) || {}
@@ -302,5 +416,8 @@ export function mergeProfileWithExtraction(
     patterns: base.patterns,
     progress,
     whatWorked: mergedWhatWorked,
+    whatDidntWork: mergedWhatDidntWork,
+    emotionalAnchors: mergedAnchors,
+    topicConnections: mergedConnections,
   }
 }

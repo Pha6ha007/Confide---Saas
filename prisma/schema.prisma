@@ -53,6 +53,13 @@ model UserProfile {
   patterns          Json?    // повторяющиеся сценарии
   progress          Json?    // что улучшилось
   whatWorked        Json?    @map("what_worked") // что давало результат
+
+  // Memory Agent Upgrade (март 2026) — автоматический анализ стиля
+  styleMetrics      Json     @default("{}") @map("style_metrics") // avgMessageLength, usesEmoji, emotionalOpenness, etc
+  whatDidntWork     Json     @default("[]") @map("what_didnt_work") // что НЕ сработало
+  emotionalAnchors  Json     @default("[]") @map("emotional_anchors") // метафоры/фразы которые зацепили
+  topicConnections  Json     @default("{}") @map("topic_connections") // связи между темами
+
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

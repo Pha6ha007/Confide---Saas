@@ -87,6 +87,11 @@ export async function POST(request: NextRequest) {
               patterns: [],
               progress: {},
               whatWorked: [],
+              // Memory Agent Upgrade (март 2026)
+              styleMetrics: {},
+              whatDidntWork: [],
+              emotionalAnchors: [],
+              topicConnections: {},
             },
           },
         },
@@ -304,6 +309,33 @@ export async function POST(request: NextRequest) {
     const ragContext = formatContextForPrompt(retrievedChunks)
 
     // ============================================
+    // 10.5. TIME-AWARE CONTEXT
+    // ============================================
+    // Build temporal context for system prompt
+    const now = new Date()
+    const hour = now.getHours()
+    const dayOfWeek = now.toLocaleDateString('en', { weekday: 'long' })
+    const isWeekend = now.getDay() === 0 || now.getDay() === 6
+    const isLateNight = hour >= 23 || hour <= 4
+    const isEarlyMorning = hour >= 5 && hour <= 7
+    const isMorning = hour >= 8 && hour <= 11
+    const isEvening = hour >= 18 && hour <= 22
+
+    const timeContext = `
+# CURRENT CONTEXT
+- Day: ${dayOfWeek}
+- Time: ${hour.toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}
+${isLateNight ? "- LATE NIGHT — user is up late. Be gentle. Ask what's keeping them up." : ''}
+${isEarlyMorning ? '- EARLY MORNING — user is up early. Notice it: "Early start today."' : ''}
+${isWeekend ? '- WEEKEND — more relaxed tone appropriate.' : ''}
+${dayOfWeek === 'Monday' ? "- MONDAY — week is starting. Check how they're going into it." : ''}
+${isEvening ? '- EVENING — end of day. Good time to reflect.' : ''}
+
+Use this context SUBTLY. Don't say "I see it's 2am!" — instead: "It's late. What's keeping you up?"
+Only reference the time if it's RELEVANT — late night, early morning, or Monday. Don't mention it in normal hours.
+`
+
+    // ============================================
     // 11. ПОСТРОИТЬ SYSTEM PROMPT (с RAG контекстом)
     // ============================================
     // NOTE: recentHistory больше не передаётся в system prompt - теперь это отдельные messages
@@ -346,7 +378,7 @@ export async function POST(request: NextRequest) {
     // ============================================
     // 12. ВЫЗВАТЬ AI (Groq/OpenAI)
     // ============================================
-    // Add enforced rules reminder at the end of system prompt
+    // Add time context and enforced rules reminder at the end of system prompt
     const enforcedRules = `
 
 CRITICAL REMINDER — FOLLOW THESE OR THE RESPONSE FAILS:
@@ -356,7 +388,7 @@ CRITICAL REMINDER — FOLLOW THESE OR THE RESPONSE FAILS:
 - If user wrote "hey" — reply in 5 words max.
 `
 
-    const finalSystemPrompt = systemPrompt + enforcedRules
+    const finalSystemPrompt = systemPrompt + timeContext + enforcedRules
 
     // FIX: Передаём conversation history как отдельные messages для лучшего качества
     const completion = await openai.chat.completions.create({

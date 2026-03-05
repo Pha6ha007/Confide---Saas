@@ -28,7 +28,29 @@ export interface UserProfile {
   patterns: string[]
   progress: Record<string, any>
   whatWorked: string[]
+
+  // Memory Agent Upgrade (март 2026)
+  styleMetrics?: StyleMetrics
+  whatDidntWork?: string[]
+  emotionalAnchors?: string[]
+  topicConnections?: Record<string, string[]>
+
   updatedAt: Date
+}
+
+// Style Metrics (автоматический анализ стиля общения)
+export interface StyleMetrics {
+  avgMessageLength: number // средняя длина сообщения в словах
+  avgMessageChars: number // средняя длина в символах
+  usesEmoji: boolean // использует ли emoji
+  usesSlang: boolean // использует ли сленг
+  usesCaps: boolean // пишет ли КАПСОМ
+  punctuationStyle: 'formal' | 'casual' | 'minimal'
+  emotionalOpenness: 'high' | 'medium' | 'low'
+  responsePreference: 'questions' | 'reflections' | 'advice' | 'mixed'
+  sessionCount: number
+  totalMessages: number
+  lastActive: string
 }
 
 // Session Types

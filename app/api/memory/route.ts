@@ -7,6 +7,7 @@ import {
   buildMemoryPrompt,
   mergeProfileWithExtraction,
 } from '@/agents/prompts/memory'
+import { analyzeUserStyle, mergeStyleMetrics } from '@/lib/memory/style-analyzer'
 import { ErrorResponse } from '@/types'
 
 
@@ -108,7 +109,26 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // 6. ВЫЗВАТЬ MEMORY AGENT
+    // 6. STYLE ANALYSIS — АВТОМАТИЧЕСКИЙ АНАЛИЗ СТИЛЯ
+    // ============================================
+    // Анализируем стиль общения пользователя на основе сообщений этой сессии
+    const messagesForAnalysis = session.messages.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+      createdAt: msg.createdAt,
+    }))
+
+    const newStyleMetrics = analyzeUserStyle(messagesForAnalysis)
+
+    // Мерджим с существующими метриками (усреднение, накопление счётчиков)
+    const existingStyleMetrics = (session.user.profile?.styleMetrics as any) || {}
+    const mergedStyleMetrics = mergeStyleMetrics(
+      existingStyleMetrics,
+      newStyleMetrics
+    )
+
+    // ============================================
+    // 7. ВЫЗВАТЬ MEMORY AGENT
     // ============================================
     const memoryPrompt = buildMemoryPrompt(
       conversation,
@@ -130,7 +150,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // 7. ПАРСИТЬ JSON ОТВЕТ
+    // 8. ПАРСИТЬ JSON ОТВЕТ
     // ============================================
     let extraction
     try {
@@ -147,7 +167,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
-    // 8. MERGE С СУЩЕСТВУЮЩИМ ПРОФИЛЕМ
+    // 9. MERGE С СУЩЕСТВУЮЩИМ ПРОФИЛЕМ
     // ============================================
     const updatedProfileData = mergeProfileWithExtraction(
       extraction,
@@ -155,13 +175,16 @@ export async function POST(request: NextRequest) {
     )
 
     // ============================================
-    // 9. СОХРАНИТЬ ПРОФИЛЬ В БД
+    // 10. СОХРАНИТЬ ПРОФИЛЬ В БД (включая styleMetrics)
     // ============================================
     if (session.user.profile) {
       // Обновить существующий профиль
       await prisma.userProfile.update({
         where: { userId: user.id },
-        data: updatedProfileData,
+        data: {
+          ...updatedProfileData,
+          styleMetrics: mergedStyleMetrics as any, // Добавляем styleMetrics (as any для Prisma Json type)
+        },
       })
     } else {
       // Создать новый профиль
@@ -169,12 +192,13 @@ export async function POST(request: NextRequest) {
         data: {
           userId: user.id,
           ...updatedProfileData,
+          styleMetrics: mergedStyleMetrics as any, // Добавляем styleMetrics (as any для Prisma Json type)
         },
       })
     }
 
     // ============================================
-    // 10. ГЕНЕРИРОВАТЬ SESSION SUMMARY
+    // 11. ГЕНЕРИРОВАТЬ SESSION SUMMARY
     // ============================================
     const summaryPrompt =
       session.user.language === 'ru'
@@ -193,7 +217,7 @@ export async function POST(request: NextRequest) {
       'Session completed successfully.'
 
     // ============================================
-    // 11. СОХРАНИТЬ SUMMARY В СЕССИИ
+    // 12. СОХРАНИТЬ SUMMARY В СЕССИИ
     // ============================================
     await prisma.session.update({
       where: { id: sessionId },
@@ -204,7 +228,7 @@ export async function POST(request: NextRequest) {
     })
 
     // ============================================
-    // 12. ВЕРНУТЬ РЕЗУЛЬТАТ
+    // 13. ВЕРНУТЬ РЕЗУЛЬТАТ
     // ============================================
     return NextResponse.json({
       success: true,

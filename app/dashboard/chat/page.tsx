@@ -8,7 +8,13 @@ import { ChatHistorySidebar } from '@/components/chat/ChatHistorySidebar'
 
 export default function ChatPage() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
-  const [sidebarVisible, setSidebarVisible] = useState(true)
+  const [sidebarVisible, setSidebarVisible] = useState(false)
+
+  // Initialize sidebar visibility based on screen size
+  useEffect(() => {
+    const isMobile = window.innerWidth < 1024
+    setSidebarVisible(!isMobile)
+  }, [])
 
   // Restore active session from localStorage on mount
   useEffect(() => {
@@ -29,7 +35,7 @@ export default function ChatPage() {
 
   const handleSelectSession = (sessionId: string) => {
     setActiveSessionId(sessionId)
-    // Close sidebar on mobile after selecting
+    // Auto-close sidebar on mobile after selecting
     if (window.innerWidth < 1024) {
       setSidebarVisible(false)
     }
@@ -37,7 +43,7 @@ export default function ChatPage() {
 
   const handleNewConversation = () => {
     setActiveSessionId(null)
-    // Close sidebar on mobile after action
+    // Auto-close sidebar on mobile after action
     if (window.innerWidth < 1024) {
       setSidebarVisible(false)
     }
@@ -52,34 +58,43 @@ export default function ChatPage() {
       {/* Backdrop for mobile sidebar */}
       {sidebarVisible && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-30"
+          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           onClick={() => setSidebarVisible(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - hidden on mobile by default, visible on desktop */}
       <div
-        className={`${
-          sidebarVisible ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 fixed lg:relative z-40 h-full transition-transform duration-300 ease-in-out`}
+        className={`
+          ${sidebarVisible ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto
+          h-full transition-transform duration-300 ease-in-out
+        `}
       >
         <ChatHistorySidebar
           activeSessionId={activeSessionId}
           onSelectSession={handleSelectSession}
           onNewConversation={handleNewConversation}
+          onClose={() => setSidebarVisible(false)}
         />
       </div>
 
       {/* Main Chat Window */}
       <div className="flex-1 h-full relative">
-        {/* Toggle Button (Mobile) - inside chat window */}
+        {/* Toggle Button (Mobile only) */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setSidebarVisible(!sidebarVisible)}
-          className="absolute top-4 left-4 z-10 lg:hidden glass-button border border-white/20 shadow-lg"
+          className="absolute top-4 left-4 z-10 lg:hidden"
+          style={{
+            background: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(99, 102, 241, 0.2)',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+          }}
         >
-          <MessageSquare className="w-4 h-4" />
+          <MessageSquare className="w-4 h-4" style={{ color: '#6366F1' }} />
         </Button>
 
         <ChatWindow

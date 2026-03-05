@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Search, MessageSquare } from 'lucide-react'
+import { Plus, Search, MessageSquare, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { SessionPreview } from '@/types'
@@ -11,6 +11,7 @@ interface ChatHistorySidebarProps {
   onSelectSession: (sessionId: string) => void
   onNewConversation: () => void
   onSessionCreated?: () => void
+  onClose?: () => void
 }
 
 const AGENT_COLORS: Record<string, string> = {
@@ -76,6 +77,7 @@ export function ChatHistorySidebar({
   activeSessionId,
   onSelectSession,
   onNewConversation,
+  onClose,
 }: ChatHistorySidebarProps) {
   const [sessions, setSessions] = useState<SessionPreview[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -150,15 +152,29 @@ export function ChatHistorySidebar({
           >
             Conversations
           </h2>
-          <button
-            onClick={onNewConversation}
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
-            style={{ background: '#6366F1', color: '#fff' }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#5558E3')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#6366F1')}
-          >
-            <Plus className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onNewConversation}
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+              style={{ background: '#6366F1', color: '#fff' }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#5558E3')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = '#6366F1')}
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+            {/* Close button (mobile only) */}
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                style={{ background: '#F3F4F6', color: '#6B7280' }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#E5E7EB')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = '#F3F4F6')}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Search */}

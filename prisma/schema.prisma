@@ -40,6 +40,8 @@ model User {
   goals             Goal[]
   homework          Homework[]
   proactiveMessages ProactiveMessage[]
+  allianceSurveys   AllianceSurvey[]
+  safetyLogs        SafetyLog[]
 
   @@map("users")
 }
@@ -265,4 +267,45 @@ model ProactiveMessage {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("proactive_messages")
+}
+
+// ============================================
+// THERAPEUTIC ALLIANCE SURVEY
+// ============================================
+
+model AllianceSurvey {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  sessionNumber  Int      @map("session_number") // На какой сессии показан опрос (5, 10, 15...)
+  understanding  Int      // 1-5: "Alex понимает меня"
+  trust          Int      // 1-5: "Я могу быть честным с Alex"
+  helpfulness    Int      // 1-5: "Разговоры помогают мне"
+  feedback       String?  @db.Text // Опциональный текстовый отзыв
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("alliance_surveys")
+}
+
+// ============================================
+// SAFETY LOGGING
+// ============================================
+
+model SafetyLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  sessionId     String   @map("session_id")
+  messageId     String   @map("message_id")
+  triggerType   String   @map("trigger_type") // "crisis_adjacent" | "inappropriate" | "boundary_violation" | "medical_advice"
+  userMessage   String   @map("user_message") // Только первые 50 символов для контекста
+  agentResponse String   @map("agent_response") @db.Text // Первые 200 символов ответа
+  severity      String   // "low" | "medium" | "high"
+  reviewed      Boolean  @default(false)
+  reviewNote    String?  @map("review_note") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("safety_logs")
 }

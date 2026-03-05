@@ -212,6 +212,53 @@ export default async function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* About Alex - AI Transparency */}
+      <Card className="glass-button border border-white/20 shadow-large rounded-2xl transition-smooth hover-lift">
+        <CardHeader>
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#6366F1] to-[#818CF8] rounded-xl flex items-center justify-center shadow-lg">
+              <MessageCircle className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <CardTitle className="font-serif text-2xl">About {dbUser.companionName || 'Alex'}</CardTitle>
+              <CardDescription className="text-base mt-1">
+                Understanding your AI companion
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="prose prose-sm max-w-none">
+            <p className="text-gray-700 leading-relaxed">
+              {dbUser.companionName || 'Alex'} is an AI companion — not a therapist, not a replacement
+              for professional mental health care. Think of this as a space to think out loud, process
+              your thoughts, and explore what's going on inside.
+            </p>
+            <p className="text-gray-700 leading-relaxed mt-3">
+              <strong>What {dbUser.companionName || 'Alex'} can do:</strong>
+            </p>
+            <ul className="list-disc list-inside text-gray-700 space-y-1 mt-2">
+              <li>Listen without judgment, remember your story</li>
+              <li>Help you think through challenges using evidence-based techniques</li>
+              <li>Offer psychological insights grounded in real research</li>
+              <li>Be available 24/7 when you need to talk</li>
+            </ul>
+            <p className="text-gray-700 leading-relaxed mt-3">
+              <strong>What {dbUser.companionName || 'Alex'} cannot do:</strong>
+            </p>
+            <ul className="list-disc list-inside text-gray-700 space-y-1 mt-2">
+              <li>Diagnose mental health conditions</li>
+              <li>Prescribe medication or provide medical advice</li>
+              <li>Replace licensed therapy or crisis intervention</li>
+            </ul>
+            <p className="text-gray-700 leading-relaxed mt-4 p-3 bg-amber-50 border-l-4 border-amber-400 rounded">
+              <strong>In crisis?</strong> If you're in immediate danger, please contact emergency
+              services or a crisis hotline in your country. This is support, not emergency care.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Sign Out */}
       <Card className="glass-button border border-white/20 shadow-large rounded-2xl transition-smooth hover-lift">
         <CardHeader>

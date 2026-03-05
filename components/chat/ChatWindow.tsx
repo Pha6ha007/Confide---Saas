@@ -21,6 +21,7 @@ import { VoiceRecorder } from '@/components/voice/VoiceRecorder'
 import { AudioPlayer } from '@/components/voice/AudioPlayer'
 import { TooltipSimple } from '@/components/ui/tooltip-simple'
 import { ProactiveNotification } from './ProactiveNotification'
+import { AllianceSurvey } from './AllianceSurvey'
 import { Message } from '@/types'
 
 interface ProactiveMessage {
@@ -61,6 +62,7 @@ export function ChatWindow({ sessionId, onSessionCreated, activeSessionId, onSes
   const [showTour, setShowTour] = useState(false) // Onboarding tour overlay
   const [messageCount, setMessageCount] = useState(0) // Track user messages in current session
   const [proactiveMessages, setProactiveMessages] = useState<ProactiveMessage[]>([]) // Proactive messages from Alex
+  const [showAllianceSurvey, setShowAllianceSurvey] = useState(false) // Alliance survey modal
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -610,6 +612,22 @@ export function ChatWindow({ sessionId, onSessionCreated, activeSessionId, onSes
         })
       }
 
+      // Check if should show alliance survey
+      try {
+        const surveyCheckResponse = await fetch('/api/survey/check')
+        if (surveyCheckResponse.ok) {
+          const surveyData = await surveyCheckResponse.json()
+          if (surveyData.showSurvey) {
+            setShowAllianceSurvey(true)
+            // Don't reset state yet - wait for survey completion
+            return
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check alliance survey:', error)
+        // Continue even if survey check fails
+      }
+
       // Сбросить всё состояние для новой сессии
       setMessages([])
       setCurrentSessionId(undefined)
@@ -840,6 +858,37 @@ export function ChatWindow({ sessionId, onSessionCreated, activeSessionId, onSes
             onSkip={() => setShowAfterMoodCheckIn(false)}
           />
         </div>
+      )}
+
+      {/* Alliance Survey Modal */}
+      {showAllianceSurvey && (
+        <AllianceSurvey
+          companionName={companionName}
+          onComplete={() => {
+            setShowAllianceSurvey(false)
+            // Reset state after survey completion
+            setMessages([])
+            setCurrentSessionId(undefined)
+            setMessageCount(0)
+            setMemoryUpdated(false)
+            setGreetingLoaded(false)
+            setSources([])
+            onSessionChange?.(null)
+            localStorage.removeItem('confide_active_session')
+          }}
+          onSkip={() => {
+            setShowAllianceSurvey(false)
+            // Reset state after skipping survey
+            setMessages([])
+            setCurrentSessionId(undefined)
+            setMessageCount(0)
+            setMemoryUpdated(false)
+            setGreetingLoaded(false)
+            setSources([])
+            onSessionChange?.(null)
+            localStorage.removeItem('confide_active_session')
+          }}
+        />
       )}
     </div>
   )

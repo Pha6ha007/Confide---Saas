@@ -124,9 +124,10 @@ function getNewUserGreeting(
         ? `Доброе утро, ${preferredName}. Как начинается день?`
         : `Доброе утро. Как начинается день?`
     }
+    // First-ever greeting with AI disclosure (Russian)
     return preferredName
-      ? `Привет, ${preferredName}! Я ${companionName}. Что у тебя на уме?`
-      : `Привет! Я ${companionName}. Что у тебя на уме?`
+      ? `Привет, ${preferredName}! Я ${companionName}. Я AI-собеседник — не терапевт, не человек — но я здесь чтобы слушать, помнить, и помогать тебе разобраться в мыслях. Что у тебя на уме?`
+      : `Привет! Я ${companionName}. Я AI-собеседник — не терапевт, не человек — но я здесь чтобы слушать, помнить, и помогать тебе разобраться в мыслях. Что у тебя на уме?`
   }
 
   if (isLateNight) {
@@ -139,9 +140,10 @@ function getNewUserGreeting(
       : `Morning. How are you starting the day?`
   }
 
+  // First-ever greeting with AI disclosure
   return preferredName
-    ? `Hi ${preferredName}! I'm ${companionName}. What's on your mind?`
-    : `Hi! I'm ${companionName}. What's on your mind?`
+    ? `Hey ${preferredName}! I'm ${companionName}. I'm an AI companion — not a therapist, not a human — but I'm here to listen, remember, and help you think things through. What's on your mind?`
+    : `Hey! I'm ${companionName}. I'm an AI companion — not a therapist, not a human — but I'm here to listen, remember, and help you think things through. What's on your mind?`
 }
 
 function getReturningUserGreeting(

@@ -18,6 +18,7 @@ import { retrieveContext, formatContextForPrompt } from '@/lib/pinecone/retrieva
 import { getNamespaceForAgent } from '@/lib/pinecone/namespace-mapping'
 import { ChatResponse, ErrorResponse, AgentType } from '@/types'
 import { routeToAgent, shouldReroute } from '@/lib/agents/orchestrator'
+import { checkResponseSafety } from '@/lib/safety/response-checker'
 
 
 
@@ -404,6 +405,40 @@ CRITICAL REMINDER — FOLLOW THESE OR THE RESPONSE FAILS:
 
     const assistantMessage = completion.choices[0]?.message?.content ||
       'I apologize, but I had trouble generating a response. Could you try again?'
+
+    // ============================================
+    // 12.5. SAFETY CHECK — log potentially problematic responses
+    // ============================================
+    const safetyFlag = checkResponseSafety(userMessage, assistantMessage)
+
+    if (safetyFlag) {
+      // Log to SafetyLog for review
+      try {
+        await prisma.safetyLog.create({
+          data: {
+            userId: user.id,
+            sessionId: session.id,
+            messageId: '', // Will update after creating message
+            triggerType: safetyFlag.type,
+            userMessage: userMessage.slice(0, 50), // First 50 chars only
+            agentResponse: assistantMessage.slice(0, 200), // First 200 chars only
+            severity: safetyFlag.severity,
+          },
+        })
+
+        // Warn if high severity
+        if (safetyFlag.severity === 'high') {
+          console.warn(
+            `[SAFETY] High severity flag: ${safetyFlag.type} for user ${user.id}`,
+            safetyFlag.pattern ? `Pattern: "${safetyFlag.pattern}"` : ''
+          )
+          // TODO: In production — alert admin via email/Slack
+        }
+      } catch (error) {
+        console.error('[SAFETY] Failed to log safety event:', error)
+        // Don't block the response if logging fails
+      }
+    }
 
     // ============================================
     // 13. СОХРАНИТЬ ASSISTANT MESSAGE

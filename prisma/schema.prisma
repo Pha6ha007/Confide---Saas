@@ -36,9 +36,10 @@ model User {
   journalEntries JournalEntry[]
   diaries        Diary[]
   subscription   Subscription?
-  moodEntries    MoodEntry[]
-  goals          Goal[]
-  homework       Homework[]
+  moodEntries       MoodEntry[]
+  goals             Goal[]
+  homework          Homework[]
+  proactiveMessages ProactiveMessage[]
 
   @@map("users")
 }
@@ -239,4 +240,22 @@ model Homework {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("homework")
+}
+
+// ============================================
+// PROACTIVE MESSAGES
+// ============================================
+
+model ProactiveMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  type      String   // "nudge" | "morning" | "followup" | "milestone" | "exercise"
+  content   String   @db.Text
+  metadata  Json?    // { reason, sessionId, etc }
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("proactive_messages")
 }

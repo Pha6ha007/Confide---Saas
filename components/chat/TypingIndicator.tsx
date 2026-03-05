@@ -9,12 +9,12 @@ interface TypingIndicatorProps {
 export function TypingIndicator({ companionName = 'Alex' }: TypingIndicatorProps) {
   return (
     <motion.div
-      className="flex justify-start mb-4"
+      className="flex justify-start mb-2.5"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="glass-button border border-white/20 rounded-2xl px-5 py-4 shadow-card backdrop-blur-md hover-lift">
+      <div className="glass-button border border-white/20 rounded-2xl px-4 py-2.5 shadow-card backdrop-blur-md hover-lift">
         <div className="flex items-center space-x-3">
           <div className="flex space-x-2">
             {[0, 1, 2].map((i) => (

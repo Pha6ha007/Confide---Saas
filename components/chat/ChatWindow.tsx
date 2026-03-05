@@ -20,7 +20,17 @@ import { OnboardingTour } from './OnboardingTour'
 import { VoiceRecorder } from '@/components/voice/VoiceRecorder'
 import { AudioPlayer } from '@/components/voice/AudioPlayer'
 import { TooltipSimple } from '@/components/ui/tooltip-simple'
+import { ProactiveNotification } from './ProactiveNotification'
 import { Message } from '@/types'
+
+interface ProactiveMessage {
+  id: string
+  type: string
+  content: string
+  metadata?: any
+  read: boolean
+  createdAt: string
+}
 
 interface ChatWindowProps {
   sessionId?: string
@@ -48,6 +58,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
   const [showOnboarding, setShowOnboarding] = useState(false) // First visit welcome screen
   const [showTour, setShowTour] = useState(false) // Onboarding tour overlay
   const [messageCount, setMessageCount] = useState(0) // Track user messages in current session
+  const [proactiveMessages, setProactiveMessages] = useState<ProactiveMessage[]>([]) // Proactive messages from Alex
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -57,7 +68,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
   const isVoiceAvailable = userPlan === 'pro' || userPlan === 'premium'
   const isPremium = userPlan === 'premium'
 
-  // Загрузить данные пользователя при монтировании
+  // Загрузить данные пользователя и восстановить сессию при монтировании
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -73,7 +84,35 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
       }
     }
 
+    const restoreSession = async () => {
+      const savedSessionId = localStorage.getItem('confide_active_session')
+      if (savedSessionId && !sessionId) {
+        try {
+          // Загрузить сообщения этой сессии
+          const response = await fetch(`/api/chat/messages?sessionId=${savedSessionId}`)
+          if (response.ok) {
+            const data = await response.json()
+            const loadedMessages = data.messages || []
+            setMessages(loadedMessages)
+            setCurrentSessionId(savedSessionId)
+            onSessionCreated?.(savedSessionId)
+
+            // Восстановить messageCount (количество user сообщений)
+            const userMessageCount = loadedMessages.filter((msg: any) => msg.role === 'user').length
+            setMessageCount(userMessageCount)
+          } else {
+            // Сессия не найдена — очистить localStorage
+            localStorage.removeItem('confide_active_session')
+          }
+        } catch (error) {
+          console.error('Failed to restore session:', error)
+          localStorage.removeItem('confide_active_session')
+        }
+      }
+    }
+
     fetchUserData()
+    restoreSession()
   }, [])
 
   // Проверить первый ли это визит (SSR safe)
@@ -82,6 +121,24 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
     if (!isOnboardingComplete) {
       setShowOnboarding(true)
     }
+  }, [])
+
+  // Load proactive messages when component mounts
+  useEffect(() => {
+    const loadProactiveMessages = async () => {
+      try {
+        // Trigger generation check
+        const response = await fetch('/api/proactive', { method: 'POST' })
+        if (response.ok) {
+          const data = await response.json()
+          setProactiveMessages(data.messages || [])
+        }
+      } catch (error) {
+        console.error('Failed to load proactive messages:', error)
+      }
+    }
+
+    loadProactiveMessages()
   }, [])
 
   // Check if user has mood check-in today
@@ -99,7 +156,9 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
           setHasMoodCheckInToday(hasToday)
 
           // Show before-session check-in if no session and no check-in today
-          if (!currentSessionId && !hasToday && !showOnboarding && !showTour) {
+          // Also don't show if there's a saved session being restored
+          const hasSavedSession = localStorage.getItem('confide_active_session')
+          if (!currentSessionId && !hasToday && !showOnboarding && !showTour && !hasSavedSession) {
             setShowBeforeMoodCheckIn(true)
           }
         }
@@ -137,7 +196,9 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
       // - уже загружается
       // - уже загружено
       // - показывается before mood check-in
-      if (messages.length > 0 || isLoadingGreeting || greetingLoaded || showBeforeMoodCheckIn) {
+      // - есть сохранённая сессия в localStorage (восстанавливается)
+      const hasSavedSession = localStorage.getItem('confide_active_session')
+      if (messages.length > 0 || isLoadingGreeting || greetingLoaded || showBeforeMoodCheckIn || hasSavedSession) {
         return
       }
 
@@ -316,6 +377,8 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
       if (data.sessionId && !currentSessionId) {
         setCurrentSessionId(data.sessionId)
         onSessionCreated?.(data.sessionId)
+        // Сохранить в localStorage для восстановления при навигации
+        localStorage.setItem('confide_active_session', data.sessionId)
       }
 
       // Add assistant message
@@ -472,7 +535,25 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
     handleSubmit(undefined, text)
   }
 
+  const handleProactiveMessageRead = async (messageId: string) => {
+    try {
+      const response = await fetch(`/api/proactive/${messageId}`, {
+        method: 'PATCH',
+      })
+
+      if (response.ok) {
+        // Remove from local state
+        setProactiveMessages((prev) => prev.filter((msg) => msg.id !== messageId))
+      }
+    } catch (error) {
+      console.error('Failed to mark proactive message as read:', error)
+    }
+  }
+
   const handleNewConversation = async () => {
+    // Очистить сохранённую сессию из localStorage
+    localStorage.removeItem('confide_active_session')
+
     // Если нет активной сессии или мало сообщений - просто сбросить
     if (!currentSessionId || messages.length < 2) {
       setMessages([])
@@ -522,6 +603,9 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
       setMemoryUpdated(false)
       setGreetingLoaded(false)
       setSources([])
+
+      // Очистить localStorage после успешного сохранения
+      localStorage.removeItem('confide_active_session')
     } catch (error) {
       console.error('Failed to start new conversation:', error)
       toast.error('Failed to save session')
@@ -548,7 +632,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
         <>
           {/* Header with New Conversation button */}
           {currentSessionId && messages.length > 0 && (
-            <div className="border-b border-white/20 px-6 py-3 glass backdrop-blur-md">
+            <div className="border-b border-white/20 px-6 py-2 glass backdrop-blur-md">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -568,7 +652,18 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
           )}
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
+        {/* Proactive Messages from Alex */}
+        {proactiveMessages.map((proactiveMsg) => (
+          <ProactiveNotification
+            key={proactiveMsg.id}
+            message={proactiveMsg}
+            companionName={companionName}
+            onRead={handleProactiveMessageRead}
+          />
+        ))}
+
+        {/* Regular Messages */}
         {messages.map((message) => (
           <MessageBubble
             key={message.id}
@@ -596,7 +691,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
       )}
 
       {/* Input Area */}
-      <div className="glass border-t border-white/20 p-6 shadow-large">
+      <div className="glass border-t border-white/20 p-4 shadow-large">
         <div className="space-y-4">
           {/* Voice Controls — только для PRO/PREMIUM */}
           {isVoiceAvailable && (
@@ -700,7 +795,7 @@ export function ChatWindow({ sessionId, onSessionCreated }: ChatWindowProps) {
           )}
         </div>
 
-        <p className="text-xs text-muted-foreground mt-3 text-center">
+        <p className="text-xs text-muted-foreground mt-2 text-center opacity-70">
           This is AI support, not medical advice. In crisis, contact emergency
           services.
         </p>

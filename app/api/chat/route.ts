@@ -215,11 +215,14 @@ export async function POST(request: NextRequest) {
     // Перевернуть чтобы были в хронологическом порядке
     recentMessages.reverse()
 
-    // Форматировать в строку для контекста
-    const recentHistory = recentMessages
+    // Build message history array for OpenAI API
+    // NOTE: Передаём как отдельные messages, НЕ как текст в system prompt
+    const messageHistory = recentMessages
       .slice(0, -1) // Исключить текущее сообщение (оно последнее)
-      .map((msg) => `${msg.role === 'user' ? 'User' : dbUser.companionName}: ${msg.content}`)
-      .join('\n')
+      .map((msg) => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+      }))
 
     // Загрузить последние 3 summary из прошлых сессий
     const pastSessions = await prisma.session.findMany({
@@ -303,9 +306,9 @@ export async function POST(request: NextRequest) {
     // ============================================
     // 11. ПОСТРОИТЬ SYSTEM PROMPT (с RAG контекстом)
     // ============================================
+    // NOTE: recentHistory больше не передаётся в system prompt - теперь это отдельные messages
     const promptParams = {
       userProfile: userProfile as any,
-      recentHistory: recentHistory || undefined,
       pastSessions: pastSessionsContext,
       ragContext: ragContext || undefined,
       companionName: dbUser.companionName || 'Alex', // Fallback если пустой
@@ -343,14 +346,28 @@ export async function POST(request: NextRequest) {
     // ============================================
     // 12. ВЫЗВАТЬ AI (Groq/OpenAI)
     // ============================================
+    // Add enforced rules reminder at the end of system prompt
+    const enforcedRules = `
+
+CRITICAL REMINDER — FOLLOW THESE OR THE RESPONSE FAILS:
+- Maximum 3-4 sentences. If you wrote more — delete.
+- ONE question only. If you wrote two questions — delete one.
+- No paragraphs. One short block of text.
+- If user wrote "hey" — reply in 5 words max.
+`
+
+    const finalSystemPrompt = systemPrompt + enforcedRules
+
+    // FIX: Передаём conversation history как отдельные messages для лучшего качества
     const completion = await openai.chat.completions.create({
       model: getModel(),
       messages: [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: finalSystemPrompt },
+        ...messageHistory, // История разговора как отдельные messages
         { role: 'user', content: userMessage },
       ],
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 200, // Сокращено с 500 до 200 для более коротких ответов (≈3-4 предложения)
     })
 
     const assistantMessage = completion.choices[0]?.message?.content ||

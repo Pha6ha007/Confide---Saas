@@ -23,7 +23,7 @@ export function SourcesPanel({ sources }: SourcesPanelProps) {
   }
 
   return (
-    <div className="mt-4 border-t border-gray-200 pt-4">
+    <div className="mt-2 border-t border-gray-200 pt-2">
       <Button
         variant="ghost"
         size="sm"

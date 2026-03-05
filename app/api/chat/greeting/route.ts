@@ -103,18 +103,14 @@ export async function GET(request: NextRequest) {
 
 function getNewUserGreeting(companionName: string, preferredName: string | undefined, language: 'en' | 'ru'): string {
   if (language === 'ru') {
-    const greeting = preferredName
-      ? `Привет, ${preferredName}! Я ${companionName}, твой личный собеседник.`
-      : `Привет! Я ${companionName}, твой личный собеседник.`
-
-    return `${greeting} Я здесь когда бы тебе ни понадобилось поговорить — и я буду помнить всё, чем мы делимся, так что тебе никогда не придётся повторяться. Что у тебя на уме сегодня?`
+    return preferredName
+      ? `Привет, ${preferredName}! Я ${companionName}. Что у тебя на уме?`
+      : `Привет! Я ${companionName}. Что у тебя на уме?`
   }
 
-  const greeting = preferredName
-    ? `Hi ${preferredName}! I'm ${companionName}, your personal companion.`
-    : `Hi! I'm ${companionName}, your personal companion.`
-
-  return `${greeting} I'm here whenever you need to talk — and I'll remember everything we share, so you never have to repeat yourself. What's on your mind today?`
+  return preferredName
+    ? `Hi ${preferredName}! I'm ${companionName}. What's on your mind?`
+    : `Hi! I'm ${companionName}. What's on your mind?`
 }
 
 function getReturningUserGreeting(
@@ -133,9 +129,9 @@ function getReturningUserGreeting(
         ? 'неделю'
         : 'какое-то время'
 
-    const greeting = preferredName ? `С возвращением, ${preferredName}!` : 'С возвращением!'
-
-    return `${greeting} Прошло ${timePhrase} с нашего последнего разговора. Как у тебя дела?`
+    return preferredName
+      ? `С возвращением, ${preferredName}! Прошло ${timePhrase}. Как дела?`
+      : `С возвращением! Прошло ${timePhrase}. Как дела?`
   }
 
   const timePhrase =
@@ -147,9 +143,9 @@ function getReturningUserGreeting(
       ? 'a week'
       : 'a while'
 
-  const greeting = preferredName ? `Welcome back, ${preferredName}!` : 'Welcome back!'
-
-  return `${greeting} It's been ${timePhrase} since we last talked. How have you been?`
+  return preferredName
+    ? `Hey ${preferredName}! It's been ${timePhrase}. How are you?`
+    : `Hey! It's been ${timePhrase}. How are you?`
 }
 
 function getFollowUpGreeting(
@@ -159,26 +155,20 @@ function getFollowUpGreeting(
   language: 'en' | 'ru'
 ): string {
   if (language === 'ru') {
-    const greeting = preferredName ? `Привет, ${preferredName}!` : 'Привет!'
-    return `${greeting} В прошлый раз ты упоминал: "${followUp}". Как всё прошло?`
+    return preferredName
+      ? `Привет, ${preferredName}! Как всё прошло с "${followUp}"?`
+      : `Привет! Как всё прошло с "${followUp}"?`
   }
 
-  const greeting = preferredName ? `Hey ${preferredName}!` : 'Hey!'
-  return `${greeting} Last time you mentioned: "${followUp}". How did that go?`
+  return preferredName
+    ? `Hey ${preferredName}! How did "${followUp}" go?`
+    : `Hey! How did "${followUp}" go?`
 }
 
 function getRegularGreeting(companionName: string, preferredName: string | undefined, language: 'en' | 'ru'): string {
   if (language === 'ru') {
-    const greeting = preferredName
-      ? `Привет, ${preferredName}! Я ${companionName}, твой личный собеседник.`
-      : `Привет! Я ${companionName}, твой личный собеседник.`
-
-    return `${greeting} Я здесь когда бы тебе ни понадобилось поговорить — и я буду помнить всё, чем мы делимся, так что тебе никогда не придётся повторяться. Что у тебя на уме сегодня?`
+    return preferredName ? `Привет, ${preferredName}! Что нового?` : `Привет! Что нового?`
   }
 
-  const greeting = preferredName
-    ? `Hi ${preferredName}! I'm ${companionName}, your personal companion.`
-    : `Hi! I'm ${companionName}, your personal companion.`
-
-  return `${greeting} I'm here whenever you need to talk — and I'll remember everything we share, so you never have to repeat yourself. What's on your mind today?`
+  return preferredName ? `Hey ${preferredName}! What's up?` : `Hey! What's up?`
 }

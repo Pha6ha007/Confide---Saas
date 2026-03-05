@@ -41,7 +41,7 @@ export function SuggestionChips({ onSelect }: SuggestionChipsProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}
-      className="max-w-xl mx-auto mb-6"
+      className="max-w-xl mx-auto mb-3"
     >
       <div className="flex flex-wrap justify-center gap-2">
         {suggestions.map((suggestion, index) => {

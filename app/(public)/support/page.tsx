@@ -267,6 +267,7 @@ export default function SupportPage() {
             <div className="flex items-center space-x-6 text-sm text-[#6B7280]">
               <Link href="/privacy" className="hover:text-[#6366F1] transition-smooth">Privacy</Link>
               <Link href="/terms" className="hover:text-[#6366F1] transition-smooth">Terms</Link>
+              <Link href="/refund" className="hover:text-[#6366F1] transition-smooth">Refund</Link>
               <Link href="/contact" className="hover:text-[#6366F1] transition-smooth">Contact</Link>
             </div>
           </div>

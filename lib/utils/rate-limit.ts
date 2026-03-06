@@ -2,7 +2,7 @@
 // PostgreSQL-based rate limiting for serverless environment (Vercel)
 // CRITICAL: In-memory storage does NOT work in serverless — each invocation is separate
 
-import { prisma } from "@/lib/supabase/client";
+import { prisma } from "@/lib/prisma";
 
 // Rate limits by plan (messages per 10 minutes)
 const RATE_LIMITS = {

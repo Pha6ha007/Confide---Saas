@@ -235,11 +235,11 @@ export default function RefundPage() {
           <p className="text-[#6B7280] leading-relaxed mb-6">
             We're here to help. Reach out and we'll respond within 24 hours.
           </p>
-          <a href="mailto:hello@confide.app">
+          <Link href="/contact">
             <Button className="bg-gradient-to-r from-[#6366F1] to-[#EC4899] text-white font-semibold px-8 py-6 text-base hover-lift shadow-lg">
               Contact Us
             </Button>
-          </a>
+          </Link>
         </motion.div>
       </main>
 

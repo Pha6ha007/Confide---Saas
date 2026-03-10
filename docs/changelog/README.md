@@ -9,6 +9,7 @@
 | [2026-03-04.md](./2026-03-04.md) | 4 марта | RAG optimization, agents integration, voice, onboarding, exercises, RAG expansion |
 | [2026-03-05.md](./2026-03-05.md) | 5 марта | Mood tracking, goals, diary PDF, **cron job автогенерации**, **AI month summaries**, **monthly letter email**, conversation quality, chat history, memory upgrade, Alex personality, safety, **rate limiting** |
 | [2026-03-06.md](./2026-03-06.md) | 6 марта | **Refund Policy page** (Paddle legal requirement) |
+| [2026-03-10.md](./2026-03-10.md) | 10 марта | **Blog system** (evidence-based psychology articles, SEO, animated tag cloud, navigation integration) |
 
 ## Формат записи
 

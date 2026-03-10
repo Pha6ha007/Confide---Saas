@@ -8,7 +8,7 @@
 
 **Версия:** 0.1 MVP
 **Фаза разработки:** Phase 4 — Analytics & Features
-**Последнее обновление:** 5 марта 2026
+**Последнее обновление:** 10 марта 2026
 
 ---
 
@@ -55,7 +55,7 @@
 - Proactive messages system (morning check-ins, nudges, follow-ups)
 - Wellness exercises (13 practices: breathing, grounding, meditation)
 
-### ✅ Phase 4 — Analytics (в разработке)
+### ✅ Phase 4 — Analytics & Content (в разработке)
 - Mood tracking system (emoji + tags + notes)
 - Progress goals with milestones
 - Journal insights + word cloud
@@ -66,6 +66,11 @@
 - Memory agent upgrade (style analyzer, emotional anchors)
 - Alex personality + humanization
 - Therapeutic alliance survey + safety logging
+- **Blog system** — evidence-based psychology articles для SEO и органического трафика
+  - Animated tag cloud с фильтрацией
+  - Rich content blocks (stats, tables, sources, CTAs)
+  - SEO metadata (OpenGraph, Twitter cards)
+  - Навигация интегрирована в весь сайт
 
 ---
 
@@ -242,13 +247,16 @@ curl -H "Authorization: Bearer ${CRON_SECRET}" \
 - [ ] Прогресс-карта по целям
 - [x] Письмо из прошлого (ежемесячный отчёт) ✅
 - [x] Домашние задания от агента ✅
+- [x] Blog система ✅
 
-### Phase 5 — Growth
+### Phase 5 — Growth & Content
+- [ ] Больше blog статей (Depression, Trauma, Relationships, Men's/Women's health)
 - [ ] PWA интеграция (next-pwa)
 - [ ] Push notifications
 - [ ] Русская локализация (i18n готов)
 - [ ] Реферальная программа
 - [ ] B2B корпоративные лицензии
+- [ ] YouTube контент интеграция
 
 ---
 

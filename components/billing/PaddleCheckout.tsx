@@ -36,6 +36,8 @@ export function PaddleCheckout({
           checkoutOpenedRef.current = false
           onSuccess?.()
         }
+        // Логируем все события для диагностики
+        console.log('[Paddle event]', event.name, event)
       },
     }).then((instance) => {
       if (instance) setPaddle(instance)
@@ -77,6 +79,7 @@ export function PaddleCheckout({
       // Помечаем что мы сами открыли checkout
       checkoutOpenedRef.current = true
 
+      console.log('[Paddle] Opening checkout', { confirmedPriceId, customerEmail, customData })
       await paddle.Checkout.open({
         items: [{ priceId: confirmedPriceId, quantity: 1 }],
         customer: { email: customerEmail },

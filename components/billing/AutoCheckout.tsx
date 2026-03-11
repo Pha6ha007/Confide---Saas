@@ -63,6 +63,9 @@ export function AutoCheckout() {
           items: [{ priceId: confirmedPriceId, quantity: 1 }],
           customer: { email: customerEmail },
           customData,
+          settings: {
+            successUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/chat?upgraded=true`,
+          },
         })
       } catch {
         // Тихо игнорируем — пользователь может вручную перейти в settings

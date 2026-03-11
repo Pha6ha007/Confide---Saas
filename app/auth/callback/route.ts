@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  const plan = requestUrl.searchParams.get('plan') // pro | premium
   const origin = requestUrl.origin
 
   if (code) {
@@ -45,13 +46,19 @@ export async function GET(request: Request) {
         .eq('id', data.user.id)
         .single()
 
-      // Если companion_name пустой — редирект на onboarding
+      // Если companion_name пустой — редирект на onboarding (с планом если есть)
       if (!dbUser || !dbUser.companion_name || dbUser.companion_name.trim() === '') {
-        return NextResponse.redirect(`${origin}/onboarding`)
+        const onboardingUrl = plan
+          ? `${origin}/onboarding?plan=${plan}`
+          : `${origin}/onboarding`
+        return NextResponse.redirect(onboardingUrl)
       }
     }
   }
 
-  // Редирект на dashboard после успешной аутентификации
-  return NextResponse.redirect(`${origin}/dashboard/chat`)
+  // Редирект на dashboard после успешной аутентификации (с планом для авто-checkout)
+  const dashboardUrl = plan
+    ? `${origin}/dashboard/chat?checkout=${plan}`
+    : `${origin}/dashboard/chat`
+  return NextResponse.redirect(dashboardUrl)
 }

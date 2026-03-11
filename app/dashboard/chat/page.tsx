@@ -5,6 +5,7 @@ import { MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ChatWindow } from '@/components/chat/ChatWindow'
 import { ChatHistorySidebar } from '@/components/chat/ChatHistorySidebar'
+import { AutoCheckout } from '@/components/billing/AutoCheckout'
 
 export default function ChatPage() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
@@ -55,6 +56,7 @@ export default function ChatPage() {
 
   return (
     <div className="h-full flex relative">
+      <AutoCheckout />
       {/* Backdrop for mobile sidebar */}
       {sidebarVisible && (
         <div

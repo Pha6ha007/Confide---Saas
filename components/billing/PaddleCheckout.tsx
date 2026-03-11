@@ -55,8 +55,8 @@ export function PaddleCheckout({
       })
 
       if (res.status === 401) {
-        // Не авторизован — редирект на регистрацию
-        router.push('/register')
+        // Не авторизован — редирект на регистрацию с планом
+        router.push(`/register?plan=${planName.toLowerCase()}`)
         return
       }
 

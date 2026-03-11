@@ -2,15 +2,17 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Mail, Lock, AlertCircle, Loader2, User } from 'lucide-react'
+import { ArrowLeft, Mail, Lock, AlertCircle, Loader2, Star, Zap } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan') // 'pro' | 'premium' | null
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -37,11 +39,15 @@ export default function RegisterPage() {
 
     try {
       const supabase = createClient()
+      const callbackUrl = plan
+        ? `${window.location.origin}/auth/callback?plan=${plan}`
+        : `${window.location.origin}/auth/callback`
+
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: callbackUrl,
         },
       })
 
@@ -100,13 +106,36 @@ export default function RegisterPage() {
             </div>
           </div>
 
+          {/* Plan banner */}
+          {plan && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`mb-6 p-4 rounded-xl flex items-center space-x-3 ${
+                plan === 'premium'
+                  ? 'bg-amber-50 border border-amber-200'
+                  : 'bg-indigo-50 border border-indigo-200'
+              }`}
+            >
+              {plan === 'premium' ? (
+                <Star className="w-5 h-5 text-amber-500 flex-shrink-0" />
+              ) : (
+                <Zap className="w-5 h-5 text-indigo-500 flex-shrink-0" />
+              )}
+              <p className={`text-sm font-medium ${plan === 'premium' ? 'text-amber-900' : 'text-indigo-900'}`}>
+                You selected the <strong>{plan === 'premium' ? 'Premium $29/mo' : 'Pro $19/mo'}</strong> plan.
+                Create an account to continue.
+              </p>
+            </motion.div>
+          )}
+
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="font-serif text-3xl font-bold text-[#1F2937] mb-2">
-              Start for free
+              {plan ? 'Create your account' : 'Start for free'}
             </h1>
             <p className="text-[#6B7280]">
-              Create your account — no credit card required
+              {plan ? 'After verification, your plan will activate automatically' : 'Create your account — no credit card required'}
             </p>
           </div>
 
@@ -264,10 +293,13 @@ export default function RegisterPage() {
                 variant="outline"
                 onClick={async () => {
                   const supabase = createClient()
+                  const oauthCallback = plan
+                    ? `${window.location.origin}/auth/callback?plan=${plan}`
+                    : `${window.location.origin}/auth/callback`
                   await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                      redirectTo: `${window.location.origin}/auth/callback`,
+                      redirectTo: oauthCallback,
                     },
                   })
                 }}

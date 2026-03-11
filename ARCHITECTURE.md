@@ -7,8 +7,8 @@
 ## Текущий статус
 
 **Версия:** 0.1 MVP
-**Фаза разработки:** Phase 4 — Analytics & Features
-**Последнее обновление:** 10 марта 2026
+**Фаза разработки:** Phase 4 завершена → Phase 5 Growth
+**Последнее обновление:** 11 марта 2026
 
 ---
 
@@ -38,6 +38,16 @@
 - Paddle payments (Merchant of Record)
 - Development agents в `.claude/agents/`
 - i18n через next-intl (EN + RU)
+
+### ✅ Phase 1 — MVP Core + Монетизация (завершено 11 марта 2026)
+- **Paddle Billing** — полный цикл подписок
+  - PaddleCheckout overlay (Paddle.js v2)
+  - `/api/billing/create-checkout` — auth + customData
+  - `/api/billing/webhook` — subscription.activated/updated/canceled
+  - AutoCheckout — авто-открытие после регистрации
+  - Webhook обновляет user.plan в БД через Prisma
+  - Незалогиненные: /register?plan=pro → email → авто-checkout
+  - 14 days free trial настроен
 
 ### ✅ Phase 1 — MVP Core
 - Supabase Auth (email/password + Google OAuth)
@@ -243,11 +253,11 @@ curl -H "Authorization: Bearer ${CRON_SECRET}" \
 
 ## Следующие шаги
 
-### Phase 4 завершение
-- [ ] Прогресс-карта по целям
-- [x] Письмо из прошлого (ежемесячный отчёт) ✅
-- [x] Домашние задания от агента ✅
-- [x] Blog система ✅
+### Phase 1 — Монетизация (остался 1 пункт)
+- [x] Paddle subscriptions ✅
+- [x] Paddle webhooks ✅
+- [x] Email onboarding (Resend) ✅
+- [ ] Customer portal (Manage Subscription) — Coming Soon
 
 ### Phase 5 — Growth & Content
 - [ ] Больше blog статей (Depression, Trauma, Relationships, Men's/Women's health)

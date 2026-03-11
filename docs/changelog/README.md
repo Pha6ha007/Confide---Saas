@@ -10,6 +10,7 @@
 | [2026-03-05.md](./2026-03-05.md) | 5 марта | Mood tracking, goals, diary PDF, **cron job автогенерации**, **AI month summaries**, **monthly letter email**, conversation quality, chat history, memory upgrade, Alex personality, safety, **rate limiting** |
 | [2026-03-06.md](./2026-03-06.md) | 6 марта | **Refund Policy page** (Paddle legal requirement) |
 | [2026-03-10.md](./2026-03-10.md) | 10 марта | **Blog system** (evidence-based psychology articles, SEO, animated tag cloud, navigation integration), **SEO optimization** (sitemap.xml, robots.txt, JSON-LD structured data) |
+| [2026-03-11.md](./2026-03-11.md) | 11 марта | **Paddle Billing** — полный цикл подписок: PaddleCheckout overlay, webhook обработка, AutoCheckout после регистрации, план Free→Pro работает end-to-end |
 
 ## Формат записи
 

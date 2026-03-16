@@ -53,7 +53,7 @@ This milestone is complete only when all are true:
 - [x] **S02: Voice Silence Auto-Stop** `risk:medium` `depends:[]`
   > After this: VoiceRecorder starts recording on press, monitors audio via Web Audio API AnalyserNode, and auto-stops after 1.5s of silence — transcription fires automatically. Hold-to-release still works.
 
-- [ ] **S03: Response Mode Selector** `risk:low` `depends:[]`
+- [x] **S03: Response Mode Selector** `risk:low` `depends:[]`
   > After this: a 3-button selector (Text only / Voice only / Both) appears in the voice controls area of ChatWindow. Selected mode persists to localStorage and controls whether AI responses include audio.
 
 ## Boundary Map

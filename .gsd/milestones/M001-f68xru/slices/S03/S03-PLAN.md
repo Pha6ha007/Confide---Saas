@@ -14,7 +14,7 @@
 
 ## Tasks
 
-- [ ] **T01: ResponseModeSelector component and ChatWindow integration**
+- [x] **T01: ResponseModeSelector component and ChatWindow integration**
   Create the component, wire it into ChatWindow, replace agentVoiceEnabled with mode-based logic.
 
 ## Files Likely Touched

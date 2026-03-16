@@ -28,7 +28,7 @@ const prisma = new PrismaClient()
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 const NAMESPACE = NAMESPACES.COUNSELING_QA
 const DATASET_URL =
-  'https://huggingface.co/datasets/nbertagnolli/counsel-chat/resolve/main/20200325_counsel_chat.csv'
+  'https://huggingface.co/datasets/nbertagnolli/counsel-chat/resolve/main/20220401_counsel_chat.csv'
 
 interface CounselChatRow {
   questionID: string
@@ -285,7 +285,7 @@ async function ingestCounselChat() {
 
   // 1. Download dataset from HuggingFace
   console.log('📥 Downloading counsel-chat dataset from HuggingFace...')
-  const csvContent = await downloadFile(DATASET_URL)
+  const csvContent = require('fs').readFileSync('/tmp/counsel_chat.csv', 'utf-8')
   console.log(`   ✓ Downloaded ${(csvContent.length / 1024).toFixed(1)} KB`)
   console.log()
 

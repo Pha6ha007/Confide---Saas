@@ -13,6 +13,7 @@ export const NAMESPACES = {
   GENERAL: 'general',
   MENS: 'mens',
   WOMENS: 'womens',
+  COUNSELING_QA: 'counseling_qa',
 } as const
 
 export type Namespace = (typeof NAMESPACES)[keyof typeof NAMESPACES]

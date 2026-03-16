@@ -681,6 +681,14 @@ export default function LandingPage() {
                   <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
                   <span className="text-[#4B5563] font-medium">Basic analytics</span>
                 </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
+                  <span className="text-[#4B5563] font-medium">Wellness exercises (13 practices)</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
+                  <span className="text-[#4B5563] font-medium">Mood tracking</span>
+                </li>
               </ul>
 
               <PaddleCheckout
@@ -717,11 +725,7 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Custom voice selection</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Streaming voice responses</span>
+                  <span className="text-[#4B5563]">Streaming voice (~0.5s latency)</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
@@ -733,15 +737,11 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Books + therapist Q&A knowledge</span>
+                  <span className="text-[#4B5563]">Monthly PDF diary</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
                   <span className="text-[#4B5563]">Full analytics & insights</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Monthly PDF diary</span>
                 </li>
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
@@ -750,6 +750,14 @@ export default function LandingPage() {
                 <li className="flex items-start">
                   <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
                   <span className="text-[#4B5563]">Priority support</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                  <span className="text-[#4B5563]">Custom voice selection</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                  <span className="text-[#4B5563]">Early access to new features</span>
                 </li>
               </ul>
 

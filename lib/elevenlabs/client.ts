@@ -7,7 +7,13 @@
  * - Каждый пользователь может иметь уникальный voiceId
  * - По умолчанию используется Rachel (хороший тёплый женский голос)
  * - Starter план: 10,000 символов/месяц
+ *
+ * PsyGUARD Upgrade (март 2026):
+ * - Добавлен streaming TTS через @elevenlabs/elevenlabs-js SDK
+ * - textToSpeechStream() возвращает ReadableStream для chunked transfer
  */
+
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
 
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1'
@@ -31,6 +37,21 @@ const DEFAULT_SETTINGS: ElevenLabsVoiceSettings = {
   similarity_boost: 0.8, // Близко к оригиналу
   style: 0.3, // Немного выразительности
   use_speaker_boost: true,
+}
+
+// Lazy-init SDK client for streaming
+let _elevenLabsClient: ElevenLabsClient | null = null
+
+function getElevenLabsClient(): ElevenLabsClient {
+  if (!_elevenLabsClient) {
+    if (!ELEVENLABS_API_KEY) {
+      throw new Error('ElevenLabs API key not configured')
+    }
+    _elevenLabsClient = new ElevenLabsClient({
+      apiKey: ELEVENLABS_API_KEY,
+    })
+  }
+  return _elevenLabsClient
 }
 
 /**
@@ -134,4 +155,41 @@ export async function getUsageStats() {
   }
 
   return response.json()
+}
+
+/**
+ * Streaming TTS — returns a ReadableStream of audio chunks.
+ *
+ * Uses @elevenlabs/elevenlabs-js SDK for proper chunked streaming.
+ * Audio starts playing on the client after the first chunk arrives (~0.3-0.5s)
+ * instead of waiting for the entire buffer (~2-4s for long text).
+ *
+ * @param text — Text to synthesize
+ * @param voiceId — ElevenLabs voice ID (optional, falls back to default)
+ * @param gender — 'male' | 'female' for default voice selection
+ * @returns ReadableStream<Uint8Array> of mp3 audio chunks
+ */
+export async function textToSpeechStream(
+  text: string,
+  voiceId?: string,
+  gender?: 'male' | 'female'
+): Promise<ReadableStream<Uint8Array>> {
+  const client = getElevenLabsClient()
+  const finalVoiceId = voiceId || DEFAULT_VOICES[gender || 'female']
+
+  // SDK returns a ReadableStream of audio chunks
+  const audioStream = await client.textToSpeech.stream(finalVoiceId, {
+    text,
+    modelId: 'eleven_turbo_v2_5', // Fastest model for streaming UX
+    outputFormat: 'mp3_44100_128',
+    voiceSettings: {
+      stability: DEFAULT_SETTINGS.stability,
+      similarityBoost: DEFAULT_SETTINGS.similarity_boost,
+      style: DEFAULT_SETTINGS.style,
+      useSpeakerBoost: DEFAULT_SETTINGS.use_speaker_boost,
+    },
+  })
+
+  // The SDK returns a ReadableStream — pass it through directly
+  return audioStream as unknown as ReadableStream<Uint8Array>
 }

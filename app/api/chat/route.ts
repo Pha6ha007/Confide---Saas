@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { openai, getModel } from '@/lib/openai/client'
-import { textToSpeech } from '@/lib/elevenlabs/client'
+import { textToSpeech, textToSpeechStream } from '@/lib/elevenlabs/client'
 import {
   buildAnxietyPrompt,
   buildFamilyPrompt,

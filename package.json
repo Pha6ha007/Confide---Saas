@@ -10,6 +10,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.39.0",
     "@langchain/openai": "^1.2.11",
     "@langchain/pinecone": "^1.0.1",
     "@paddle/paddle-js": "^1.6.2",

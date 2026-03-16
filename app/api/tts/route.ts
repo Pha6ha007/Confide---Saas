@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { textToSpeech } from '@/lib/elevenlabs/client'
+import { textToSpeech, textToSpeechStream } from '@/lib/elevenlabs/client'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { ErrorResponse } from '@/types'
 
@@ -24,6 +24,7 @@ import { ErrorResponse } from '@/types'
 
 const TTSRequestSchema = z.object({
   text: z.string().min(1).max(5000),
+  stream: z.boolean().optional().default(false),
 })
 
 export async function POST(request: NextRequest) {
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { text } = validation.data
+    const { text, stream: useStreaming } = validation.data
 
     // ============================================
     // 3. ПОЛУЧИТЬ ПОЛЬЗОВАТЕЛЯ ИЗ БД
@@ -120,15 +121,42 @@ export async function POST(request: NextRequest) {
         ? dbUser.companionGender
         : 'female'
 
+    const rateLimitHeaders = {
+      'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+      'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+      'X-RateLimit-Reset': rateLimitResult.resetIn.toString(),
+    }
+
+    // ============================================
+    // 7. STREAMING MODE — chunked transfer for low latency
+    // ============================================
+    if (useStreaming) {
+      const audioStream = await textToSpeechStream(
+        text,
+        dbUser.voiceId || undefined,
+        gender
+      )
+
+      return new NextResponse(audioStream as any, {
+        status: 200,
+        headers: {
+          'Content-Type': 'audio/mpeg',
+          'Transfer-Encoding': 'chunked',
+          'Cache-Control': 'no-cache',
+          ...rateLimitHeaders,
+        },
+      })
+    }
+
+    // ============================================
+    // 7b. BUFFERED MODE — full response (legacy, cached)
+    // ============================================
     const audioBuffer = await textToSpeech(
       text,
       dbUser.voiceId || undefined,
       gender
     )
 
-    // ============================================
-    // 7. ВЕРНУТЬ АУДИО КАК STREAM (с rate limit headers)
-    // ============================================
     return new NextResponse(audioBuffer, {
       status: 200,
       headers: {
@@ -136,10 +164,7 @@ export async function POST(request: NextRequest) {
         'Content-Length': audioBuffer.byteLength.toString(),
         // Cache для экономии запросов (тот же текст = тот же аудио)
         'Cache-Control': 'public, max-age=3600',
-        // Rate limit headers
-        'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-        'X-RateLimit-Reset': rateLimitResult.resetIn.toString(),
+        ...rateLimitHeaders,
       },
     })
   } catch (error) {

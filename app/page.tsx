@@ -587,14 +587,14 @@ export default function LandingPage() {
           </div>
 
           {/* Pricing Cards */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
             {/* FREE Plan */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="glass-button rounded-3xl p-8 hover-lift"
+              className="glass-button rounded-3xl p-8 hover-lift flex flex-col"
             >
               <div className="text-center mb-6">
                 <h3 className="font-serif text-2xl font-bold text-[#1F2937] mb-2">Free</h3>
@@ -605,26 +605,28 @@ export default function LandingPage() {
                 <p className="text-[#6B7280] text-sm">Perfect to get started</p>
               </div>
 
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">5 sessions per week</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Text chat only</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">1 agent (Anxiety)</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Crisis support always</span>
-                </li>
-              </ul>
+              <div className="flex-1">
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">5 sessions per week</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Text chat only</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">1 agent (Anxiety)</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Crisis support always</span>
+                  </li>
+                </ul>
+              </div>
 
-              <Link href="/register" className="block">
+              <Link href="/register" className="block mt-auto">
                 <button className="w-full py-4 px-6 rounded-xl font-semibold text-[#1F2937] bg-white/50 hover:bg-white/70 transition-all border-2 border-[#E5E7EB]">
                   Start free
                 </button>
@@ -637,7 +639,7 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="glass-button rounded-3xl p-8 hover-lift relative border-2 border-[#6366F1] shadow-2xl scale-105"
+              className="glass-button rounded-3xl p-8 hover-lift relative border-2 border-[#6366F1] shadow-2xl scale-105 flex flex-col"
             >
               {/* Most Popular Badge */}
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
@@ -656,46 +658,48 @@ export default function LandingPage() {
                 <p className="text-[#6B7280] text-sm">For serious progress</p>
               </div>
 
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563] font-medium">Unlimited sessions</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563] font-medium">Voice + Text modes</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563] font-medium">All 6 specialist agents</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563] font-medium">Smart memory that evolves</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563] font-medium">Real therapist Q&A knowledge</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563] font-medium">Basic analytics</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563] font-medium">Wellness exercises (13 practices)</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563] font-medium">Mood tracking</span>
-                </li>
-              </ul>
+              <div className="flex-1">
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563] font-medium">Unlimited sessions</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563] font-medium">Voice + Text modes</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563] font-medium">All 6 specialist agents</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563] font-medium">Smart memory that evolves</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563] font-medium">Real therapist Q&A knowledge</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563] font-medium">Basic analytics</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563] font-medium">Wellness exercises (13 practices)</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563] font-medium">Mood tracking</span>
+                  </li>
+                </ul>
+              </div>
 
               <PaddleCheckout
                 priceId={process.env.NEXT_PUBLIC_PADDLE_PRO_PRICE_ID!}
                 planName="Pro"
                 onSuccess={handleCheckoutSuccess}
-                className="w-full group relative overflow-hidden py-4 px-6 rounded-xl font-bold text-white transition-all shadow-lg hover:shadow-xl bg-gradient-to-r from-[#6366F1] to-[#EC4899]"
+                className="w-full group relative overflow-hidden py-4 px-6 rounded-xl font-bold text-white transition-all shadow-lg hover:shadow-xl bg-gradient-to-r from-[#6366F1] to-[#EC4899] mt-auto"
               >
                 Start free trial
               </PaddleCheckout>
@@ -707,7 +711,7 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="glass-button rounded-3xl p-8 hover-lift"
+              className="glass-button rounded-3xl p-8 hover-lift flex flex-col"
             >
               <div className="text-center mb-6">
                 <h3 className="font-serif text-2xl font-bold text-[#1F2937] mb-2">Premium</h3>
@@ -718,54 +722,56 @@ export default function LandingPage() {
                 <p className="text-[#6B7280] text-sm">Maximum personalization</p>
               </div>
 
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Everything in Pro</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Streaming voice (~0.5s latency)</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Smart memory deduplication</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Adaptive communication style</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Monthly PDF diary</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Full analytics & insights</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">4-level crisis detection</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Priority support</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Custom voice selection</span>
-                </li>
-                <li className="flex items-start">
-                  <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-[#4B5563]">Early access to new features</span>
-                </li>
-              </ul>
+              <div className="flex-1">
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Everything in Pro</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Streaming voice (~0.5s latency)</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Smart memory deduplication</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Adaptive communication style</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Monthly PDF diary</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Full analytics & insights</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">4-level crisis detection</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Priority support</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Custom voice selection</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Early access to new features</span>
+                  </li>
+                </ul>
+              </div>
 
               <PaddleCheckout
                 priceId={process.env.NEXT_PUBLIC_PADDLE_PREMIUM_PRICE_ID!}
                 planName="Premium"
                 onSuccess={handleCheckoutSuccess}
-                className="w-full py-4 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-[#F59E0B] to-[#FBBF24] hover:shadow-lg transition-all"
+                className="w-full py-4 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-[#F59E0B] to-[#FBBF24] hover:shadow-lg transition-all mt-auto"
               >
                 Get Premium
               </PaddleCheckout>

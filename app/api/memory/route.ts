@@ -9,6 +9,11 @@ import {
 } from '@/agents/prompts/memory'
 import { analyzeUserStyle, mergeStyleMetrics } from '@/lib/memory/style-analyzer'
 import { processMemoriesWithDedup, type DedupResult } from '@/lib/memory/dedup-engine'
+import {
+  extractProceduralLessons,
+  mergeProceduralMemory,
+  type ProceduralMemory,
+} from '@/lib/memory/procedural-memory'
 import { ErrorResponse } from '@/types'
 
 
@@ -221,6 +226,52 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================
+    // 10.6. PROCEDURAL MEMORY — learn HOW to communicate
+    // ============================================
+    let proceduralUpdated = false
+    try {
+      const messagesForProcedural = session.messages.map(m => ({
+        role: m.role,
+        content: m.content,
+      }))
+
+      const lessons = await extractProceduralLessons(messagesForProcedural)
+
+      if (lessons && (lessons.effectivePatterns.length > 0 || lessons.avoidPatterns.length > 0)) {
+        // Get existing procedural memory from communicationStyle
+        const existingCommStyle = (session.user.profile?.communicationStyle as any) || {}
+        const existingProcedural = existingCommStyle.proceduralMemory || null
+
+        // Merge with new lessons
+        const mergedProcedural = mergeProceduralMemory(existingProcedural, lessons)
+
+        // Save back into communicationStyle.proceduralMemory
+        await prisma.userProfile.update({
+          where: { userId: user.id },
+          data: {
+            communicationStyle: {
+              ...existingCommStyle,
+              proceduralMemory: mergedProcedural as any,
+            },
+          },
+        })
+
+        proceduralUpdated = true
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Procedural Memory]', {
+            effective: lessons.effectivePatterns,
+            avoid: lessons.avoidPatterns,
+            note: lessons.responseStyleNote,
+          })
+        }
+      }
+    } catch (proceduralError) {
+      // Don't fail the whole memory route if procedural extraction fails
+      console.error('[Procedural Memory] Error:', proceduralError)
+    }
+
+    // ============================================
     // 11. ГЕНЕРИРОВАТЬ SESSION SUMMARY
     // ============================================
     const summaryPrompt =
@@ -264,6 +315,7 @@ export async function POST(request: NextRequest) {
         updated: dedupResults.filter(r => r.action === 'UPDATE').length,
         skipped: dedupResults.filter(r => r.action === 'NOOP').length,
       },
+      proceduralUpdated,
     })
   } catch (error) {
     console.error('Memory API error:', error)

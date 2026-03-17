@@ -47,7 +47,6 @@ export default function LandingPage() {
               <div className="hidden lg:flex items-center space-x-6 text-sm font-medium text-[#6B7280] lg:mr-4">
                 <Link href="/blog" className="hover:text-[#6366F1] transition-smooth">Blog</Link>
                 <a href="#pricing" className="hover:text-[#6366F1] transition-smooth">Pricing</a>
-                <Link href="/support" className="hover:text-[#6366F1] transition-smooth">Support Us</Link>
                 <Link href="/contact" className="hover:text-[#6366F1] transition-smooth">Contact</Link>
               </div>
 
@@ -104,13 +103,6 @@ export default function LandingPage() {
                   Pricing
                 </a>
                 <Link
-                  href="/support"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-[#1F2937] hover:text-[#6366F1] font-medium py-2 px-4 hover:bg-white/30 rounded-lg transition-smooth"
-                >
-                  Support Us
-                </Link>
-                <Link
                   href="/contact"
                   onClick={() => setMobileMenuOpen(false)}
                   className="text-[#1F2937] hover:text-[#6366F1] font-medium py-2 px-4 hover:bg-white/30 rounded-lg transition-smooth"
@@ -130,20 +122,20 @@ export default function LandingPage() {
             {/* Badge with glassmorphism */}
             <div className="inline-flex items-center space-x-2 glass-button px-4 py-2 md:px-6 md:py-3 rounded-full text-xs md:text-sm font-medium mb-3 md:mb-6 animate-fade-in">
               <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-[#6366F1]" />
-              <span className="text-[#1F2937]">AI Emotional Support — Not Medical Service</span>
+              <span className="text-[#1F2937]">AI Wellness Companion for Self-Reflection & Growth</span>
             </div>
 
             {/* Heading with Gradient Text */}
             <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-[1.1] mb-2 md:mb-4 animate-fade-in-up">
-              Therapy costs{' '}
-              <span className="gradient-text">$200/hour</span>
+              A conversation that{' '}
+              <span className="gradient-text">remembers you</span>
               <br />
-              Meet <span className="gradient-text">Alex</span> — $19/month.
+              Meet <span className="gradient-text">Alex</span> — your personal companion.
             </h1>
 
             {/* Subheading */}
             <p className="text-base md:text-lg lg:text-xl xl:text-2xl text-[#4B5563] mb-4 md:mb-6 lg:mb-8 leading-relaxed animate-fade-in-up max-w-3xl mx-auto" style={{ animationDelay: '100ms' }}>
-              AI companion trained on real psychology — available 24/7
+              AI companion for self-reflection, personal growth, and emotional wellness — available 24/7
             </p>
 
             {/* CTA Button with 3D Effect */}
@@ -205,7 +197,7 @@ export default function LandingPage() {
                   </svg>
                 </div>
                 <h3 className="font-serif text-xl font-semibold text-[#1F2937] mb-2">Evidence-Based</h3>
-                <p className="text-sm text-[#6B7280]">Grounded in CBT, ACT, and DBT methods</p>
+                <p className="text-sm text-[#6B7280]">Grounded in proven conversation techniques</p>
               </div>
 
               {/* Card 3 */}
@@ -337,7 +329,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="font-serif text-4xl lg:text-5xl font-bold text-[#1F2937] mb-4">
-              Therapy is <span className="gradient-text">expensive</span>. We get it.
+              Someone to talk to — <span className="gradient-text">whenever you need</span>
             </h2>
           </div>
 
@@ -353,10 +345,10 @@ export default function LandingPage() {
               <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-6 shadow-lg">
                 <DollarSign className="w-7 h-7 text-white" />
               </div>
-              <h3 className="font-serif text-2xl font-bold text-[#1F2937] mb-3">Can't afford therapy?</h3>
+              <h3 className="font-serif text-2xl font-bold text-[#1F2937] mb-3">Affordable wellness</h3>
               <div className="h-1 w-16 bg-gradient-to-r from-[#6366F1] to-[#EC4899] rounded-full mb-4"></div>
               <p className="text-[#4B5563] text-lg leading-relaxed">
-                <span className="font-bold text-[#6366F1]">$19/month</span>, unlimited sessions — not $240/week
+                <span className="font-bold text-[#6366F1]">$19/month</span>, unlimited conversations with your personal companion
               </p>
             </motion.div>
 
@@ -392,7 +384,7 @@ export default function LandingPage() {
               <h3 className="font-serif text-2xl font-bold text-[#1F2937] mb-3">Generic chatbot advice?</h3>
               <div className="h-1 w-16 bg-gradient-to-r from-[#6366F1] to-[#EC4899] rounded-full mb-4"></div>
               <p className="text-[#4B5563] text-lg leading-relaxed">
-                Trained on <span className="font-bold text-[#6366F1]">37 psychology books</span> (CBT, DBT, ACT, Gottman)
+                Informed by <span className="font-bold text-[#6366F1]">37 books</span> on self-improvement and personal growth
               </p>
             </motion.div>
           </div>
@@ -407,7 +399,7 @@ export default function LandingPage() {
               How we <span className="gradient-text">compare</span>
             </h2>
             <p className="text-xl text-[#6B7280]">
-              AI support that actually remembers you
+              A companion that actually remembers you
             </p>
           </div>
 
@@ -429,7 +421,7 @@ export default function LandingPage() {
                     <th className="px-6 py-4 text-center font-serif text-lg text-[#1F2937]">Knowledge</th>
                     <th className="px-6 py-4 text-center font-serif text-lg text-[#1F2937]">Agents</th>
                     <th className="px-6 py-4 text-center font-serif text-lg text-[#1F2937]">24/7</th>
-                    <th className="px-6 py-4 text-center font-serif text-lg text-[#1F2937]">Crisis</th>
+                    <th className="px-6 py-4 text-center font-serif text-lg text-[#1F2937]">Safety</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -446,7 +438,7 @@ export default function LandingPage() {
                     <td className="px-6 py-4 text-center font-bold text-[#6366F1]">$19/mo</td>
                     <td className="px-6 py-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
                     <td className="px-6 py-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                    <td className="px-6 py-4 text-center text-xs font-medium text-[#6366F1]">Books + Q&A</td>
+                    <td className="px-6 py-4 text-center text-xs font-medium text-[#6366F1]">37 Books</td>
                     <td className="px-6 py-4 text-center font-semibold text-[#1F2937]">6</td>
                     <td className="px-6 py-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
                     <td className="px-6 py-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
@@ -621,7 +613,7 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-start">
                     <Check className="w-5 h-5 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
-                    <span className="text-[#4B5563]">Crisis support always</span>
+                    <span className="text-[#4B5563]">Safety resources always</span>
                   </li>
                 </ul>
               </div>
@@ -678,7 +670,7 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-start">
                     <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
-                    <span className="text-[#4B5563] font-medium">Real therapist Q&A knowledge</span>
+                    <span className="text-[#4B5563] font-medium">Real knowledge from 37 books</span>
                   </li>
                   <li className="flex items-start">
                     <Check className="w-5 h-5 text-[#6366F1] mr-3 flex-shrink-0 mt-0.5" />
@@ -750,7 +742,7 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-start">
                     <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
-                    <span className="text-[#4B5563]">4-level crisis detection</span>
+                    <span className="text-[#4B5563]">4-level safety detection</span>
                   </li>
                   <li className="flex items-start">
                     <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
@@ -829,8 +821,8 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 mx-auto shadow-lg">
                 <AlertTriangle className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-semibold text-[#1F2937] mb-2">Crisis detection</h3>
-              <p className="text-sm text-[#6B7280]">We detect urgent situations from day one</p>
+              <h3 className="font-semibold text-[#1F2937] mb-2">Safety resources</h3>
+              <p className="text-sm text-[#6B7280]">We connect you with help when it matters most</p>
             </motion.div>
 
             {/* Trust Card 3 */}
@@ -845,7 +837,7 @@ export default function LandingPage() {
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <h3 className="font-semibold text-[#1F2937] mb-2">Not a medical service</h3>
-              <p className="text-sm text-[#6B7280]">AI support, not medical diagnosis</p>
+              <p className="text-sm text-[#6B7280]">Wellness companion, not a doctor or therapist</p>
             </motion.div>
 
             {/* Trust Card 4 */}
@@ -914,6 +906,18 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Wellness Disclaimer */}
+      <section className="relative py-8 bg-white/30">
+        <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+          <p className="text-[#9CA3AF] text-xs leading-relaxed">
+            Confide is an AI-powered wellness companion designed for self-reflection, personal growth, and emotional wellness. 
+            Confide is <strong>not</strong> a medical service, does not provide therapy, diagnosis, or medical advice, and is not a substitute for professional healthcare. 
+            If you are experiencing a medical or mental health emergency, please contact your local emergency services or a licensed professional immediately. 
+            By using Confide, you acknowledge that it is a software product for personal development and self-improvement purposes only.
+          </p>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="relative border-t border-white/20 py-12">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -926,7 +930,7 @@ export default function LandingPage() {
             </Link>
 
             <p className="text-[#9CA3AF] text-sm">
-              © 2026 Confide. AI Emotional Support — Not Medical Service.
+              © 2026 Confide. AI Wellness Companion — Not a Medical Service.
             </p>
 
             <div className="flex items-center space-x-6 text-sm text-[#6B7280]">
@@ -934,7 +938,6 @@ export default function LandingPage() {
               <Link href="/privacy" className="hover:text-[#6366F1] transition-smooth">Privacy</Link>
               <Link href="/terms" className="hover:text-[#6366F1] transition-smooth">Terms</Link>
               <Link href="/refund" className="hover:text-[#6366F1] transition-smooth">Refund</Link>
-              <Link href="/support" className="hover:text-[#6366F1] transition-smooth">Support Us</Link>
               <Link href="/contact" className="hover:text-[#6366F1] transition-smooth">Contact</Link>
             </div>
           </div>

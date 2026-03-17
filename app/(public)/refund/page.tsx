@@ -255,7 +255,7 @@ export default function RefundPage() {
             </Link>
 
             <p className="text-[#9CA3AF] text-sm">
-              © 2026 Confide. AI Emotional Support — Not Medical Service.
+              © 2026 Confide. AI Wellness Companion — Not a Medical Service.
             </p>
 
             <div className="flex items-center space-x-6 text-sm text-[#6B7280]">

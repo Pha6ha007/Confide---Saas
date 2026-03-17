@@ -84,14 +84,14 @@ export default function TermsPage() {
                     <AlertCircle className="w-6 h-6 text-red-600 mt-1 flex-shrink-0" />
                     <div>
                       <h2 className="font-serif text-2xl font-bold text-[#991B1B] mb-3">
-                        NOT a Medical Service — Important Disclaimer
+                        Important Disclaimer — Wellness Product, Not Medical Service
                       </h2>
                       <div className="space-y-3 text-[#991B1B]">
                         <p className="leading-relaxed">
-                          <strong>Confide is NOT a medical service, NOT a licensed therapy platform, and NOT a substitute for professional mental health treatment.</strong>
+                          <strong>Confide is a wellness and self-reflection software product. It is NOT a medical service, NOT a licensed therapy platform, and NOT a substitute for professional healthcare.</strong>
                         </p>
                         <p className="leading-relaxed">
-                          Alex (our AI companion) is an AI-powered emotional support tool — not a licensed therapist, psychologist, or medical professional.
+                          Alex (our AI companion) is an AI-powered conversational tool for personal growth and self-reflection — not a licensed therapist, psychologist, or medical professional.
                         </p>
                         <p className="leading-relaxed font-semibold">
                           Confide does NOT:
@@ -99,19 +99,23 @@ export default function TermsPage() {
                         <ul className="space-y-2 ml-4">
                           <li className="flex items-start">
                             <span className="mr-2">•</span>
-                            <span>Diagnose, treat, cure, or prevent any mental health condition</span>
+                            <span>Diagnose, treat, cure, or prevent any medical or mental health condition</span>
                           </li>
                           <li className="flex items-start">
                             <span className="mr-2">•</span>
-                            <span>Prescribe medication or provide medical advice</span>
+                            <span>Prescribe medication or provide medical advice of any kind</span>
                           </li>
                           <li className="flex items-start">
                             <span className="mr-2">•</span>
-                            <span>Replace professional therapy or crisis intervention</span>
+                            <span>Replace professional therapy, counseling, or crisis intervention</span>
                           </li>
                           <li className="flex items-start">
                             <span className="mr-2">•</span>
-                            <span>Provide emergency mental health services</span>
+                            <span>Provide emergency services or clinical assessments</span>
+                          </li>
+                          <li className="flex items-start">
+                            <span className="mr-2">•</span>
+                            <span>Claim to be or act as a healthcare provider in any jurisdiction</span>
                           </li>
                         </ul>
                         <p className="leading-relaxed font-semibold">
@@ -139,7 +143,21 @@ export default function TermsPage() {
 
               {/* Eligibility */}
               <section className="mb-10">
-                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">1. Eligibility</h2>
+                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">1. Nature of Service</h2>
+                <p className="text-[#4B5563] leading-relaxed mb-3">
+                  Confide is a <strong>software-as-a-service (SaaS) product</strong> that provides an AI-powered conversational companion for self-reflection, personal growth, and emotional wellness.
+                </p>
+                <p className="text-[#4B5563] leading-relaxed mb-3">
+                  The service falls under the category of <strong>wellness and personal development software</strong>. It uses artificial intelligence to facilitate journaling, self-reflection, mood tracking, and guided exercises such as breathing and grounding techniques.
+                </p>
+                <p className="text-[#4B5563] leading-relaxed">
+                  Confide is comparable to products such as journaling apps, meditation apps, and personal development platforms. It is not comparable to, and does not compete with, medical or therapeutic services.
+                </p>
+              </section>
+
+              {/* Eligibility */}
+              <section className="mb-10">
+                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">2. Eligibility</h2>
                 <p className="text-[#4B5563] leading-relaxed mb-3">
                   You must be <strong>at least 18 years old</strong> to use Confide.
                 </p>
@@ -150,7 +168,7 @@ export default function TermsPage() {
 
               {/* Account responsibilities */}
               <section className="mb-10">
-                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">2. Your Account</h2>
+                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">3. Your Account</h2>
                 <div className="space-y-3 text-[#4B5563]">
                   <p className="leading-relaxed">
                     You are responsible for:
@@ -180,7 +198,7 @@ export default function TermsPage() {
                 <div className="flex items-start space-x-3 mb-4">
                   <Ban className="w-6 h-6 text-[#EC4899] mt-1 flex-shrink-0" />
                   <div>
-                    <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-3">3. Acceptable Use</h2>
+                    <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-3">4. Acceptable Use</h2>
                     <p className="text-[#4B5563] leading-relaxed mb-3">
                       You agree <strong>NOT</strong> to use Confide to:
                     </p>
@@ -219,7 +237,7 @@ export default function TermsPage() {
                 <div className="flex items-start space-x-3 mb-4">
                   <CreditCard className="w-6 h-6 text-[#F59E0B] mt-1 flex-shrink-0" />
                   <div>
-                    <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-3">4. Subscriptions & Payments</h2>
+                    <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-3">5. Subscriptions & Payments</h2>
 
                     <div className="space-y-4">
                       <div>
@@ -285,7 +303,7 @@ export default function TermsPage() {
 
               {/* Intellectual property */}
               <section className="mb-10">
-                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">5. Intellectual Property</h2>
+                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">6. Intellectual Property</h2>
                 <div className="space-y-3 text-[#4B5563]">
                   <p className="leading-relaxed">
                     <strong>Your Content:</strong> You retain ownership of your conversations and personal data. By using Confide, you grant us a limited license to process your content to provide the service (e.g., AI responses, analytics).
@@ -301,7 +319,7 @@ export default function TermsPage() {
                 <div className="flex items-start space-x-3 mb-4">
                   <Scale className="w-6 h-6 text-[#6366F1] mt-1 flex-shrink-0" />
                   <div>
-                    <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-3">6. Disclaimer of Warranties</h2>
+                    <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-3">7. Disclaimer of Warranties</h2>
                     <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-6">
                       <p className="text-[#374151] leading-relaxed mb-3 uppercase font-semibold text-sm">
                         Important Legal Notice
@@ -333,7 +351,7 @@ export default function TermsPage() {
 
               {/* Limitation of liability */}
               <section className="mb-10">
-                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">7. Limitation of Liability</h2>
+                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">8. Limitation of Liability</h2>
                 <p className="text-[#4B5563] leading-relaxed mb-3">
                   To the maximum extent permitted by law, <strong>Confide and its affiliates shall not be liable</strong> for:
                 </p>
@@ -362,7 +380,7 @@ export default function TermsPage() {
 
               {/* Indemnification */}
               <section className="mb-10">
-                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">8. Indemnification</h2>
+                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">9. Indemnification</h2>
                 <p className="text-[#4B5563] leading-relaxed">
                   You agree to indemnify and hold harmless Confide from any claims, damages, or expenses (including legal fees) arising from:
                 </p>
@@ -384,7 +402,7 @@ export default function TermsPage() {
 
               {/* Termination */}
               <section className="mb-10">
-                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">9. Termination</h2>
+                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">10. Termination</h2>
                 <p className="text-[#4B5563] leading-relaxed mb-3">
                   <strong>You may terminate your account at any time</strong> by deleting it in your account settings. All your data will be permanently deleted within 30 days.
                 </p>
@@ -395,7 +413,7 @@ export default function TermsPage() {
 
               {/* Governing law */}
               <section className="mb-10">
-                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">10. Governing Law</h2>
+                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">11. Governing Law</h2>
                 <p className="text-[#4B5563] leading-relaxed">
                   These Terms are governed by the laws of <strong>Delaware, United States</strong>, without regard to conflict of law principles. Any disputes shall be resolved in the courts of Delaware.
                 </p>
@@ -403,7 +421,7 @@ export default function TermsPage() {
 
               {/* Changes to Terms */}
               <section className="mb-10">
-                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">11. Changes to These Terms</h2>
+                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">12. Changes to These Terms</h2>
                 <p className="text-[#4B5563] leading-relaxed">
                   We may update these Terms from time to time. Significant changes will be communicated via email or in-app notification. Continued use of Confide after changes constitutes acceptance of the updated Terms.
                 </p>
@@ -411,7 +429,7 @@ export default function TermsPage() {
 
               {/* Contact */}
               <section>
-                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">12. Contact Us</h2>
+                <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-4">13. Contact Us</h2>
                 <p className="text-[#4B5563] leading-relaxed mb-4">
                   Questions about these Terms? Contact us:
                 </p>
@@ -462,7 +480,7 @@ export default function TermsPage() {
             </Link>
 
             <p className="text-[#9CA3AF] text-sm">
-              © 2026 Confide. AI Emotional Support — Not Medical Service.
+              © 2026 Confide. AI Wellness Companion — Not a Medical Service.
             </p>
 
             <div className="flex items-center space-x-6 text-sm text-[#6B7280]">

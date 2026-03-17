@@ -84,7 +84,7 @@ export default function SupportPage() {
             Help Us <span className="gradient-text">Keep Confide Free</span>
           </h1>
           <p className="text-lg md:text-xl text-[#6B7280] max-w-2xl mx-auto">
-            Your support helps us make mental health support accessible to everyone.
+            Your support helps us make emotional wellness tools accessible to everyone.
           </p>
         </motion.div>
 
@@ -98,7 +98,7 @@ export default function SupportPage() {
           <h2 className="font-serif text-2xl md:text-3xl font-bold text-[#1F2937] mb-6">Our Mission</h2>
           <div className="space-y-4 text-[#6B7280] leading-relaxed">
             <p>
-              Confide is built on the belief that everyone deserves access to mental health support — regardless of their financial situation.
+              Confide is built on the belief that everyone deserves access to emotional wellness tools — regardless of their financial situation.
             </p>
             <p>
               We're a solo developer project, built with passion and purpose. Your donations help us:
@@ -243,7 +243,7 @@ export default function SupportPage() {
           <div className="inline-flex items-center space-x-2 text-[#6B7280]">
             <Heart className="w-5 h-5 text-[#EC4899] fill-[#EC4899]" />
             <p className="text-lg font-medium">
-              Thank you for supporting mental health for all.
+              Thank you for supporting emotional wellness for all.
             </p>
           </div>
         </motion.div>
@@ -261,7 +261,7 @@ export default function SupportPage() {
             </Link>
 
             <p className="text-[#9CA3AF] text-sm">
-              © 2026 Confide. AI Emotional Support — Not Medical Service.
+              © 2026 Confide. AI Wellness Companion — Not a Medical Service.
             </p>
 
             <div className="flex items-center space-x-6 text-sm text-[#6B7280]">

@@ -74,7 +74,7 @@ export default function PrivacyPage() {
                   <div>
                     <h2 className="font-serif text-2xl font-bold text-[#1F2937] mb-3">Introduction</h2>
                     <p className="text-[#4B5563] leading-relaxed mb-3">
-                      <span className="font-semibold text-[#1F2937]">Confide</span> is an AI emotional support platform — not a medical service. We take your privacy seriously and are committed to protecting your personal information.
+                      <span className="font-semibold text-[#1F2937]">Confide</span> is an AI wellness companion for self-reflection and personal growth — not a medical service. We take your privacy seriously and are committed to protecting your personal information.
                     </p>
                     <p className="text-[#4B5563] leading-relaxed">
                       This Privacy Policy explains how we collect, use, store, and protect your data when you use our platform.
@@ -364,7 +364,7 @@ export default function PrivacyPage() {
             </Link>
 
             <p className="text-[#9CA3AF] text-sm">
-              © 2026 Confide. AI Emotional Support — Not Medical Service.
+              © 2026 Confide. AI Wellness Companion — Not a Medical Service.
             </p>
 
             <div className="flex items-center space-x-6 text-sm text-[#6B7280]">

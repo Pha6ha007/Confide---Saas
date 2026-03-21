@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ChatWindow } from '@/components/chat/ChatWindow'
 import { ChatHistorySidebar } from '@/components/chat/ChatHistorySidebar'
 import { AutoCheckout } from '@/components/billing/AutoCheckout'
 
-export default function ChatPage() {
+function ChatPageInner() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
   const [sidebarVisible, setSidebarVisible] = useState(false)
 
@@ -56,7 +56,9 @@ export default function ChatPage() {
 
   return (
     <div className="h-full flex relative">
-      <AutoCheckout />
+      <Suspense fallback={null}>
+        <AutoCheckout />
+      </Suspense>
       {/* Backdrop for mobile sidebar */}
       {sidebarVisible && (
         <div
@@ -99,11 +101,17 @@ export default function ChatPage() {
           <MessageSquare className="w-4 h-4" style={{ color: '#6366F1' }} />
         </Button>
 
-        <ChatWindow
-          activeSessionId={activeSessionId}
-          onSessionChange={handleSessionChange}
-        />
+        <Suspense fallback={null}>
+          <ChatWindow
+            activeSessionId={activeSessionId}
+            onSessionChange={handleSessionChange}
+          />
+        </Suspense>
       </div>
     </div>
   )
+}
+
+export default function ChatPage() {
+  return <ChatPageInner />
 }

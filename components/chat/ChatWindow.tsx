@@ -317,9 +317,11 @@ export function ChatWindow({ sessionId, onSessionCreated, activeSessionId, onSes
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (currentSessionId && !memoryUpdated && messages.length >= 2) {
-        // Use sendBeacon for reliable background request
+        // Use sendBeacon with Blob to set Content-Type: application/json
+        // Plain string sendBeacon sends as text/plain which the API cannot parse
         const data = JSON.stringify({ sessionId: currentSessionId })
-        navigator.sendBeacon('/api/memory', data)
+        const blob = new Blob([data], { type: 'application/json' })
+        navigator.sendBeacon('/api/memory', blob)
       }
     }
 

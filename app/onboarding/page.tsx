@@ -304,7 +304,7 @@ export default function OnboardingPage() {
                         <Button
                           className="w-full mt-4 rounded-xl transition-smooth hover:scale-[1.02] shadow-card"
                           variant="default"
-                          onClick={() => router.push('/pricing')}
+                          onClick={() => router.push('/#pricing')}
                         >
                           <Crown className="w-4 h-4 mr-2" />
                           Upgrade to Pro

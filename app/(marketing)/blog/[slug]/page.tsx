@@ -6,12 +6,13 @@ import { ARTICLES } from "@/lib/blog/articles";
 import ArticleView from "@/components/blog/ArticleView";
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 // SEO metadata for each article
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const article = ARTICLES.find((a) => a.slug === params.slug);
+  const { slug } = await params;
+  const article = ARTICLES.find((a) => a.slug === slug);
 
   if (!article) {
     return { title: "Article Not Found | Confide Blog" };
@@ -50,8 +51,9 @@ function convertDateToISO(dateString: string): string {
   return date.toISOString();
 }
 
-export default function BlogArticlePage({ params }: PageProps) {
-  const article = ARTICLES.find((a) => a.slug === params.slug);
+export default async function BlogArticlePage({ params }: PageProps) {
+  const { slug } = await params;
+  const article = ARTICLES.find((a) => a.slug === slug);
 
   if (!article) {
     notFound();

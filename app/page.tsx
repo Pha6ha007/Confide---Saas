@@ -45,7 +45,6 @@ export default function LandingPage() {
             <div className="flex items-center space-x-1 md:space-x-2 lg:space-x-8">
               {/* Desktop Navigation */}
               <div className="hidden lg:flex items-center space-x-6 text-sm font-medium text-[#6B7280] lg:mr-4">
-                <Link href="/blog" className="hover:text-[#6366F1] transition-smooth">Blog</Link>
                 <a href="#pricing" className="hover:text-[#6366F1] transition-smooth">Pricing</a>
                 <Link href="/contact" className="hover:text-[#6366F1] transition-smooth">Contact</Link>
               </div>
@@ -88,13 +87,6 @@ export default function LandingPage() {
           >
             <nav className="max-w-7xl mx-auto px-4 py-4">
               <div className="flex flex-col space-y-3">
-                <Link
-                  href="/blog"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-[#1F2937] hover:text-[#6366F1] font-medium py-2 px-4 hover:bg-white/30 rounded-lg transition-smooth"
-                >
-                  Blog
-                </Link>
                 <a
                   href="#pricing"
                   onClick={() => setMobileMenuOpen(false)}
@@ -934,7 +926,6 @@ export default function LandingPage() {
             </p>
 
             <div className="flex items-center space-x-6 text-sm text-[#6B7280]">
-              <Link href="/blog" className="hover:text-[#6366F1] transition-smooth">Blog</Link>
               <Link href="/privacy" className="hover:text-[#6366F1] transition-smooth">Privacy</Link>
               <Link href="/terms" className="hover:text-[#6366F1] transition-smooth">Terms</Link>
               <Link href="/refund" className="hover:text-[#6366F1] transition-smooth">Refund</Link>

@@ -368,7 +368,6 @@ export default function PrivacyPage() {
             </p>
 
             <div className="flex items-center space-x-6 text-sm text-[#6B7280]">
-              <Link href="/blog" className="hover:text-[#6366F1] transition-smooth">Blog</Link>
               <Link href="/privacy" className="hover:text-[#6366F1] transition-smooth font-medium">Privacy</Link>
               <Link href="/terms" className="hover:text-[#6366F1] transition-smooth">Terms</Link>
               <a href="mailto:support@confide.app" className="hover:text-[#6366F1] transition-smooth">Contact</a>

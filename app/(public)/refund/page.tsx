@@ -259,10 +259,8 @@ export default function RefundPage() {
             </p>
 
             <div className="flex items-center space-x-6 text-sm text-[#6B7280]">
-              <Link href="/blog" className="hover:text-[#6366F1] transition-smooth">Blog</Link>
               <Link href="/privacy" className="hover:text-[#6366F1] transition-smooth">Privacy</Link>
               <Link href="/terms" className="hover:text-[#6366F1] transition-smooth">Terms</Link>
-              <Link href="/support" className="hover:text-[#6366F1] transition-smooth">Support Us</Link>
               <Link href="/contact" className="hover:text-[#6366F1] transition-smooth">Contact</Link>
             </div>
           </div>

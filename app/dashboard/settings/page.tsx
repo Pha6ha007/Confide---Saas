@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Settings, User, MessageCircle, Globe, CreditCard, LogOut } from 'lucide-react'
 import { CompanionNameEditor } from '@/components/settings/CompanionNameEditor'
 import { VoiceCard } from '@/components/settings/VoiceCard'
+import { ManageSubscriptionButton } from '@/components/billing/ManageSubscriptionButton'
+import { UpgradeButton } from '@/components/billing/UpgradeButton'
 
 
 
@@ -204,14 +206,10 @@ export default async function SettingsPage() {
                 )}
               </div>
               {dbUser.plan === 'free' && (
-                <Button variant="default" disabled>
-                  Upgrade (Coming Soon)
-                </Button>
+                <UpgradeButton />
               )}
               {dbUser.plan !== 'free' && (
-                <Button variant="outline" disabled>
-                  Manage Subscription (Coming Soon)
-                </Button>
+                <ManageSubscriptionButton />
               )}
             </div>
           </div>

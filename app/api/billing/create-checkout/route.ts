@@ -75,9 +75,14 @@ export async function POST(request: NextRequest) {
       checkoutUrl: session.checkout_url,
     })
   } catch (err: any) {
-    console.error('Dodo checkout creation error:', err?.message || err)
+    console.error('Dodo checkout creation error:', JSON.stringify({
+      message: err?.message,
+      status: err?.status,
+      body: err?.error || err?.body,
+      headers: err?.headers,
+    }, null, 2))
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: 'Failed to create checkout session', details: err?.message || String(err) },
       { status: 500 }
     )
   }

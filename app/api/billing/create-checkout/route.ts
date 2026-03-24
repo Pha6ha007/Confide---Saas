@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { dodo, DODO_PRODUCTS } from '@/lib/dodo/client'
+import { getDodo, DODO_PRODUCTS } from '@/lib/dodo/client'
 
 const RequestSchema = z.object({
   productId: z.string().min(1),
 })
 
-// Создаёт Dodo Payments subscription и возвращает checkout URL
+// Создаёт Dodo Payments checkout session и возвращает checkout URL
 export async function POST(request: NextRequest) {
   // 1. Auth check
   const supabase = await createClient()
@@ -57,34 +57,25 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // 6. Создать Dodo Payments subscription через API
+  // 6. Создать Dodo Payments checkout session
   try {
-    const dodoSubscription = await dodo.subscriptions.create({
-      billing: {
-        city: 'N/A',
-        country: 'US',
-        state: 'N/A',
-        street: 'N/A',
-        zipcode: '00000',
-      },
+    const dodo = getDodo()
+    const session = await dodo.checkoutSessions.create({
+      product_cart: [{ product_id: productId, quantity: 1 }],
       customer: {
         email: dbUser.email,
         name: dbUser.email.split('@')[0],
       },
-      product_id: productId,
-      quantity: 1,
       metadata: { userId: user.id },
       return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/chat?upgraded=true`,
-      payment_link: true,
     })
 
     // Возвращаем URL для редиректа на hosted checkout
     return NextResponse.json({
-      checkoutUrl: dodoSubscription.payment_link,
-      subscriptionId: dodoSubscription.subscription_id,
+      checkoutUrl: session.checkout_url,
     })
   } catch (err: any) {
-    console.error('Dodo checkout creation error:', err)
+    console.error('Dodo checkout creation error:', err?.message || err)
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }

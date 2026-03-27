@@ -27,6 +27,12 @@ updates:
         update-types:
           - "patch"
           - "minor"
+    # Ignore major version bumps for packages with breaking changes
+    ignore:
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@prisma/client"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"

@@ -8,7 +8,7 @@
 
 **Версия:** 0.1 MVP
 **Фаза разработки:** Phase 4 завершена → Phase 5 Growth
-**Последнее обновление:** 11 марта 2026
+**Последнее обновление:** 27 марта 2026
 
 ---
 
@@ -309,6 +309,61 @@ curl -H "Authorization: Bearer ${CRON_SECRET}" http://localhost:3000/api/cron/ge
 - **AI Agents** → промпты агентов платформы
 - **Tester** → тесты, баги, edge cases
 - **Reviewer** → code review перед коммитом
+
+---
+
+## Безопасность
+
+### Инфраструктура защиты
+
+| Слой | Что | Статус |
+|------|-----|--------|
+| **RLS** | Row Level Security на всех 16 таблицах Supabase | ✅ |
+| **Security Headers** | CSP, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy | ✅ |
+| **Auth** | Supabase Auth на всех protected API routes (getUser первым) | ✅ |
+| **IDOR** | Ownership verification (userId === user.id) на всех data routes | ✅ |
+| **Validation** | Zod schema validation на всех POST/PATCH routes с body | ✅ |
+| **Rate Limiting** | PostgreSQL-based для auth endpoints, IP-based для public | ✅ |
+| **Error Masking** | safeErrorBody() — generic errors в production, details в dev | ✅ |
+| **Crisis Protocol** | Hardcoded (не LLM), параллельный, не логирует содержание | ✅ |
+| **Response Safety** | AI ответы проверяются на medical advice, boundary violations | ✅ |
+| **Secrets** | Нет hardcoded ключей, .env в .gitignore, service_role не на клиенте | ✅ |
+
+### Автоматический мониторинг (GitHub CI)
+
+| Инструмент | Файл | Что проверяет | Когда |
+|-----------|------|---------------|-------|
+| **Dependabot** | `.github/dependabot.yml` | Уязвимости в npm зависимостях | Каждый понедельник |
+| **CodeQL** | `.github/workflows/codeql.yml` | SAST — XSS, injection, path traversal в коде | Каждый push/PR + воскресенье |
+| **Security CI** | `.github/workflows/security.yml` | npm audit + secret scan + headers check + auth check + tsc | Каждый push/PR |
+
+### Row Level Security (Supabase RLS)
+
+Все таблицы защищены RLS-политиками. Даже если кто-то получит `NEXT_PUBLIC_SUPABASE_URL` + `ANON_KEY`, он **не сможет** прочитать или изменить данные других пользователей через Supabase REST API.
+
+- **users, sessions, messages, journal, mood, goals, homework, diaries, proactive, surveys** → только свои данные (`auth.uid()`)
+- **milestones** → через проверку владельца goal
+- **knowledge_base** → read-only для авторизованных
+- **safety_logs, rate_limits** → нет доступа через anon key (только Prisma/service role)
+
+Prisma работает через direct URL (суперпользователь), RLS его не затрагивает.
+
+### Rate Limiting
+
+| Endpoint | Тип | Лимит |
+|----------|-----|-------|
+| `/api/chat` | По user + plan | Free: 5/10мин, Pro: 30, Premium: 60 |
+| `/api/voice` | По user + plan | Аналогично |
+| `/api/tts` | По user + plan | Аналогично |
+| `/api/voice/preview` | По IP | 10/мин |
+| `/api/contact` | По IP | 5/10мин |
+
+### Команды
+
+```bash
+npm run security:audit    # npm audit (high/critical)
+npm run security:check    # audit + tsc --noEmit
+```
 
 ---
 

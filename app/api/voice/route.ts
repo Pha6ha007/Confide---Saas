@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { openai } from '@/lib/openai/client'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { ErrorResponse } from '@/types'
+import { safeErrorBody } from '@/lib/utils/safe-error'
 
 /**
  * POST /api/voice
@@ -170,10 +171,7 @@ export async function POST(request: NextRequest) {
     console.error('Voice transcription error:', error)
 
     return NextResponse.json<ErrorResponse>(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      safeErrorBody('Internal server error', error),
       { status: 500 }
     )
   }

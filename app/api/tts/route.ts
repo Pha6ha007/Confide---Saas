@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { textToSpeech, textToSpeechStream } from '@/lib/elevenlabs/client'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { ErrorResponse } from '@/types'
+import { safeErrorBody } from '@/lib/utils/safe-error'
 
 
 
@@ -171,10 +172,7 @@ export async function POST(request: NextRequest) {
     console.error('TTS error:', error)
 
     return NextResponse.json<ErrorResponse>(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      safeErrorBody('Internal server error', error),
       { status: 500 }
     )
   }

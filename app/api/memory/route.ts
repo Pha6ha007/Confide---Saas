@@ -15,6 +15,7 @@ import {
   type ProceduralMemory,
 } from '@/lib/memory/procedural-memory'
 import { ErrorResponse } from '@/types'
+import { safeErrorBody } from '@/lib/utils/safe-error'
 
 
 
@@ -321,10 +322,7 @@ export async function POST(request: NextRequest) {
     console.error('Memory API error:', error)
 
     return NextResponse.json<ErrorResponse>(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      safeErrorBody('Internal server error', error),
       { status: 500 }
     )
   }

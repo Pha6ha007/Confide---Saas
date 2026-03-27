@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+import { safeErrorBody } from '@/lib/utils/safe-error'
 
 
 
@@ -55,10 +56,7 @@ export async function PATCH(request: NextRequest) {
     console.error('Update companion name error:', error)
 
     return NextResponse.json(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      safeErrorBody('Internal server error', error),
       { status: 500 }
     )
   }

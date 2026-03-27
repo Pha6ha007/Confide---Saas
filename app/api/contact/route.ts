@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
+import { checkIpRateLimit, rateLimitResponse } from "@/lib/utils/ip-rate-limit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -17,6 +18,14 @@ const contactSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 5 submissions per 10 minutes per IP
+    const rl = checkIpRateLimit(request, {
+      limit: 5,
+      windowSeconds: 600,
+      endpoint: "/api/contact",
+    });
+    if (!rl.success) return rateLimitResponse(rl);
+
     const body = await request.json();
 
     // Validate input

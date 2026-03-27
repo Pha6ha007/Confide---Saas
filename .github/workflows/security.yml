@@ -1,0 +1,121 @@
+# Security CI — runs on every push/PR to catch issues early
+# 1. npm audit — known vulnerabilities in dependencies
+# 2. Secret detection — leaked API keys, tokens, passwords
+# 3. Security headers check — verifies next.config headers exist
+# 4. TypeScript strict check — catches type-level security bugs
+
+name: "Security CI"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── npm audit ──────────────────────────────
+      - name: npm audit (high/critical only)
+        run: npm audit --audit-level=high --omit=dev
+        continue-on-error: true
+        # continue-on-error: some transitive deps have known issues
+        # with no fix available — we track them but don't block deploys
+
+      # ── Secret detection ───────────────────────
+      - name: Scan for leaked secrets
+        run: |
+          echo "Scanning for hardcoded secrets..."
+          FOUND=0
+
+          # API keys patterns
+          if grep -rn "sk-[a-zA-Z0-9]\{20,\}" app/ lib/ agents/ components/ --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v "node_modules\|\.env\|example\|test\|mock"; then
+            echo "::error::Possible OpenAI API key found in source code!"
+            FOUND=1
+          fi
+
+          if grep -rn "sk_live_\|pk_live_\|whsec_" app/ lib/ --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v "node_modules\|\.env\|example"; then
+            echo "::error::Possible payment key found in source code!"
+            FOUND=1
+          fi
+
+          # JWT tokens / base64 encoded secrets
+          if grep -rn "eyJ[a-zA-Z0-9]\{30,\}" app/ lib/ --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v "node_modules\|\.env\|example\|test\|mock\|supabase"; then
+            echo "::error::Possible JWT/encoded secret found in source code!"
+            FOUND=1
+          fi
+
+          # Supabase service role key
+          if grep -rn "SUPABASE_SERVICE_ROLE\|service_role" app/ components/ --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v "node_modules\|\.env\|example"; then
+            echo "::error::Service role key reference found in client-accessible code!"
+            FOUND=1
+          fi
+
+          if [ "$FOUND" -eq 1 ]; then
+            exit 1
+          fi
+
+          echo "✅ No leaked secrets found"
+
+      # ── Security headers check ─────────────────
+      - name: Verify security headers configured
+        run: |
+          echo "Checking next.config for security headers..."
+          MISSING=0
+
+          for header in "X-Frame-Options" "Content-Security-Policy" "Strict-Transport-Security" "X-Content-Type-Options" "Referrer-Policy" "Permissions-Policy"; do
+            if ! grep -q "$header" next.config.js next.config.ts next.config.mjs 2>/dev/null; then
+              echo "::warning::Missing security header: $header"
+              MISSING=1
+            fi
+          done
+
+          if [ "$MISSING" -eq 1 ]; then
+            echo "::warning::Some security headers are missing from next.config"
+          else
+            echo "✅ All security headers present"
+          fi
+
+      # ── Auth check on API routes ───────────────
+      - name: Verify auth on API routes
+        run: |
+          echo "Checking API routes for auth..."
+          UNPROTECTED=0
+
+          for route in $(find app/api -name "route.ts" | sort); do
+            # Skip known public endpoints
+            if echo "$route" | grep -q "contact\|voice/preview\|webhook\|cron\|callback\|robots\|sitemap"; then
+              continue
+            fi
+
+            if ! grep -q "getUser\|CRON_SECRET\|webhook" "$route"; then
+              echo "::error::Unprotected API route: $route"
+              UNPROTECTED=1
+            fi
+          done
+
+          if [ "$UNPROTECTED" -eq 1 ]; then
+            exit 1
+          fi
+
+          echo "✅ All API routes have auth checks"
+
+      # ── TypeScript check ───────────────────────
+      - name: TypeScript strict check
+        run: npx tsc --noEmit

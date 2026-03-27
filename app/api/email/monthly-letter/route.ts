@@ -129,10 +129,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('[MONTHLY_LETTER_API_ERROR]', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { success: false, error: 'Failed to send monthly letter' },
       { status: 500 }
     );
   }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { textToSpeech } from '@/lib/elevenlabs/client'
 import { getVoiceConfig } from '@/lib/voices/config'
+import { checkIpRateLimit, rateLimitResponse } from '@/lib/utils/ip-rate-limit'
 
 /**
  * API endpoint для превью голосов во время онбординга
@@ -12,7 +13,7 @@ import { getVoiceConfig } from '@/lib/voices/config'
  * ВАЖНО:
  * - Этот endpoint НЕ требует авторизации (используется в онбординге)
  * - Возвращает audio/mpeg для прослушивания
- * - Rate limiting должен быть включён (max 10 запросов в минуту с IP)
+ * - Rate limited: 10 запросов в минуту с одного IP
  */
 
 const PreviewSchema = z.object({
@@ -22,6 +23,16 @@ const PreviewSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // ============================================
+    // 0. IP RATE LIMIT (no auth — protect ElevenLabs credits)
+    // ============================================
+    const rl = checkIpRateLimit(request, {
+      limit: 10,
+      windowSeconds: 60,
+      endpoint: '/api/voice/preview',
+    })
+    if (!rl.success) return rateLimitResponse(rl)
+
     // ============================================
     // 1. ВАЛИДАЦИЯ
     // ============================================
@@ -82,24 +93,9 @@ export async function POST(request: NextRequest) {
     console.error('Voice preview error:', error)
 
     return NextResponse.json(
-      {
-        error: 'Failed to generate voice preview',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Failed to generate voice preview' },
       { status: 500 }
     )
   }
 }
 
-/**
- * OPTIONS для CORS (если нужно)
- */
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  })
-}

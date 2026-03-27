@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "security:audit": "npm audit --audit-level=high --omit=dev",
+    "security:check": "npm run security:audit && npx tsc --noEmit"
   },
   "dependencies": {
     "@dodopayments/nextjs": "^0.3.4",

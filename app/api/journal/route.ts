@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { ErrorResponse } from '@/types'
+import { safeErrorBody } from '@/lib/utils/safe-error'
 
 // Валидация входных данных
 const JournalEntrySchema = z.object({
@@ -113,10 +114,7 @@ export async function POST(request: NextRequest) {
     console.error('Journal API error:', error)
 
     return NextResponse.json<ErrorResponse>(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      safeErrorBody('Internal server error', error),
       { status: 500 }
     )
   }
@@ -155,10 +153,7 @@ export async function GET(request: NextRequest) {
     console.error('Journal API error:', error)
 
     return NextResponse.json<ErrorResponse>(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      safeErrorBody('Internal server error', error),
       { status: 500 }
     )
   }

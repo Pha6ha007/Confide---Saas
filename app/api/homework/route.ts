@@ -2,6 +2,7 @@
 // Homework API endpoints
 
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
@@ -45,15 +46,20 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description, agent, dueDate } = body
 
-    // Validate required fields
-    if (!title || !description || !agent || !dueDate) {
-      return NextResponse.json(
-        { error: 'All fields are required' },
-        { status: 400 }
-      )
+    const CreateHomeworkSchema = z.object({
+      title: z.string().min(1).max(200),
+      description: z.string().min(1).max(2000),
+      agent: z.string().min(1).max(50),
+      dueDate: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)),
+    })
+
+    const validation = CreateHomeworkSchema.safeParse(body)
+    if (!validation.success) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
+
+    const { title, description, agent, dueDate } = validation.data
 
     const homework = await prisma.homework.create({
       data: {

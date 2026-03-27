@@ -2,8 +2,13 @@
 // Update homework (toggle done status)
 
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+
+const UpdateHomeworkSchema = z.object({
+  done: z.boolean(),
+})
 
 export async function PATCH(
   request: NextRequest,
@@ -22,7 +27,13 @@ export async function PATCH(
 
     const { id } = await context.params
     const body = await request.json()
-    const { done } = body
+    const validation = UpdateHomeworkSchema.safeParse(body)
+
+    if (!validation.success) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+    }
+
+    const { done } = validation.data
 
     // Verify homework belongs to user
     const homework = await prisma.homework.findUnique({

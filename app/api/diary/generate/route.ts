@@ -2,10 +2,16 @@
 // Creates diary entry in DB and generates PDF asynchronously
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { generateDiaryForUser } from '@/lib/diary/service';
 import { format } from 'date-fns';
+
+const DiaryGenerateSchema = z.object({
+  month: z.number().int().min(1).max(12),
+  year: z.number().int().min(2020).max(2100),
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,15 +25,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parse request body
-    const { month, year } = await req.json();
+    // Parse and validate request body
+    const body = await req.json();
+    const validation = DiaryGenerateSchema.safeParse(body);
 
-    if (!month || !year || month < 1 || month > 12) {
+    if (!validation.success) {
       return NextResponse.json(
         { error: 'Invalid month or year. Month must be 1-12.' },
         { status: 400 }
       );
     }
+
+    const { month, year } = validation.data;
 
     // Get user profile
     const dbUser = await prisma.user.findUnique({

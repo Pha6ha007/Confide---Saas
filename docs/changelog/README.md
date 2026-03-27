@@ -13,6 +13,7 @@
 | [2026-03-11.md](./2026-03-11.md) | 11 марта | **Paddle Billing** — полный цикл подписок: PaddleCheckout overlay, webhook обработка, AutoCheckout после регистрации, план Free→Pro работает end-to-end |
 | [2026-03-24.md](./2026-03-24.md) | 24 марта | **Миграция Paddle → Dodo Payments** — новый Merchant of Record, redirect checkout, HMAC webhook, Prisma migration |
 | [2026-03-25.md](./2026-03-25.md) | 25 марта | **Dodo Payments Live Mode** — переключение с test_mode на live_mode, реальные платежи активны |
+| [2026-03-27.md](./2026-03-27.md) | 27 марта | **Security Hardening** — RLS на всех таблицах, security headers (CSP/HSTS), IP rate limiting, error masking, Zod validation, GitHub CI (Dependabot + CodeQL + Security CI) |
 
 ## Формат записи
 

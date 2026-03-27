@@ -21,6 +21,7 @@ import { formatProceduralForPrompt, type ProceduralMemory } from '@/lib/memory/p
 import { ChatResponse, ErrorResponse, AgentType } from '@/types'
 import { routeToAgent, shouldReroute } from '@/lib/agents/orchestrator'
 import { checkResponseSafety } from '@/lib/safety/response-checker'
+import { safeErrorBody } from '@/lib/utils/safe-error'
 
 
 
@@ -565,10 +566,7 @@ CRITICAL REMINDER — FOLLOW THESE OR THE RESPONSE FAILS:
     console.error('Chat API error:', error)
 
     return NextResponse.json<ErrorResponse>(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
+      safeErrorBody('Internal server error', error),
       { status: 500 }
     )
   }

@@ -2,6 +2,7 @@
 // Goals API endpoints
 
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 
@@ -67,15 +68,20 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { category, title, description, milestones } = body
 
-    // Validate required fields
-    if (!category || !title) {
-      return NextResponse.json(
-        { error: 'Category and title are required' },
-        { status: 400 }
-      )
+    const CreateGoalSchema = z.object({
+      category: z.string().min(1).max(100),
+      title: z.string().min(1).max(200),
+      description: z.string().max(1000).optional(),
+      milestones: z.array(z.string().min(1).max(500)).max(20).optional(),
+    })
+
+    const validation = CreateGoalSchema.safeParse(body)
+    if (!validation.success) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
     }
+
+    const { category, title, description, milestones } = validation.data
 
     // Create goal with milestones
     const goal = await prisma.goal.create({

@@ -2,8 +2,16 @@
 // Update goal or milestone
 
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
+
+const UpdateGoalSchema = z.object({
+  progress: z.number().int().min(0).max(100).optional(),
+  isActive: z.boolean().optional(),
+  milestoneId: z.string().uuid().optional(),
+  milestoneDone: z.boolean().optional(),
+})
 
 export async function PATCH(
   request: NextRequest,
@@ -22,7 +30,13 @@ export async function PATCH(
 
     const { id } = await context.params
     const body = await request.json()
-    const { progress, isActive, milestoneId, milestoneDone } = body
+    const validation = UpdateGoalSchema.safeParse(body)
+
+    if (!validation.success) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+    }
+
+    const { progress, isActive, milestoneId, milestoneDone } = validation.data
 
     // Verify goal belongs to user
     const goal = await prisma.goal.findUnique({

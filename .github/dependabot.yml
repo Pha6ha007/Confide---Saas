@@ -27,11 +27,29 @@ updates:
         update-types:
           - "patch"
           - "minor"
-    # Ignore major version bumps for packages with breaking changes
+    # Ignore major version bumps — these require manual migration testing
     ignore:
       - dependency-name: "prisma"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@prisma/client"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@pinecone-database/pinecone"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "lucide-react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "pdf-parse"
         update-types: ["version-update:semver-major"]
 
   # GitHub Actions

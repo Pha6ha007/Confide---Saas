@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { openai } from '@/lib/openai/client'
+import { getWhisperClient } from '@/lib/ai/router'
+import { WHISPER_MODEL } from '@/lib/ai/models'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { ErrorResponse } from '@/types'
 import { safeErrorBody } from '@/lib/utils/safe-error'
@@ -129,11 +130,11 @@ export async function POST(request: NextRequest) {
     // ============================================
     // 6. ТРАНСКРИПЦИЯ ЧЕРЕЗ WHISPER
     // ============================================
-    // Groq поддерживает Whisper API совместимый интерфейс
-    // Модель: whisper-large-v3-turbo (быстрая и точная)
-    const whisperModel = process.env.GROQ_WHISPER_MODEL || 'whisper-large-v3-turbo'
+    // Groq Whisper (fast, free tier) with OpenAI Whisper fallback
+    const whisperClient = getWhisperClient()
+    const whisperModel = WHISPER_MODEL
 
-    const transcription = await openai.audio.transcriptions.create({
+    const transcription = await whisperClient.audio.transcriptions.create({
       file: audioFile,
       model: whisperModel,
       language: 'en', // NOTE: можно добавить поддержку 'ru' через user.language

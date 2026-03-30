@@ -2,7 +2,7 @@
 // Confide — Proactive Message Generation Engine
 
 import { prisma } from '@/lib/prisma'
-import { openai, getModel } from '@/lib/openai/client'
+import { callProactive } from '@/lib/ai/router'
 
 /**
  * Generate a proactive message for a user
@@ -135,13 +135,11 @@ Example:
       break
   }
 
-  // Вызвать LLM для генерации сообщения
-  const completion = await openai.chat.completions.create({
-    model: getModel(),
-    messages: [
-      {
-        role: 'system',
-        content: `${contextPrompt}
+  // Вызвать LLM для генерации сообщения (MiniMax M2.7 — friend-like tone)
+  const result = await callProactive([
+    {
+      role: 'system',
+      content: `${contextPrompt}
 
 RULES:
 - 1-2 sentences MAX
@@ -151,17 +149,14 @@ RULES:
 - No exclamation marks unless it's a genuine celebration
 - Don't start with "Hey!" every time — vary your openings
 `,
-      },
-      {
-        role: 'user',
-        content: 'Generate the proactive message now.',
-      },
-    ],
-    temperature: 0.8,
-    max_tokens: 100,
-  })
+    },
+    {
+      role: 'user',
+      content: 'Generate the proactive message now.',
+    },
+  ])
 
-  const generatedMessage = completion.choices[0]?.message?.content || 'Hey — just checking in. How are you?'
+  const generatedMessage = result.content || 'Hey — just checking in. How are you?'
 
   return generatedMessage.trim()
 }

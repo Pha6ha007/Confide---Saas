@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { openai, getModel } from '@/lib/openai/client'
+import { callMemory, callSummary } from '@/lib/ai/router'
 import {
   buildMemoryPrompt,
   mergeProfileWithExtraction,
@@ -143,14 +143,11 @@ export async function POST(request: NextRequest) {
       session.user.language as 'en' | 'ru'
     )
 
-    const memoryCompletion = await openai.chat.completions.create({
-      model: getModel(),
-      messages: [{ role: 'user', content: memoryPrompt }],
-      temperature: 0.3, // Низкая температура для точности
-      max_tokens: 1000,
-    })
+    const memoryResult = await callMemory(
+      [{ role: 'user', content: memoryPrompt }]
+    )
 
-    const memoryResponse = memoryCompletion.choices[0]?.message?.content
+    const memoryResponse = memoryResult.content
 
     if (!memoryResponse) {
       throw new Error('Memory Agent returned empty response')
@@ -280,16 +277,11 @@ export async function POST(request: NextRequest) {
         ? `Сожми этот разговор в 2-3 предложения. Фокус на главных темах и инсайтах:\n\n${conversation}`
         : `Summarize this conversation in 2-3 sentences. Focus on main topics and insights:\n\n${conversation}`
 
-    const summaryCompletion = await openai.chat.completions.create({
-      model: getModel(),
-      messages: [{ role: 'user', content: summaryPrompt }],
-      temperature: 0.5,
-      max_tokens: 200,
-    })
+    const summaryResult = await callSummary(
+      [{ role: 'user', content: summaryPrompt }]
+    )
 
-    const summary =
-      summaryCompletion.choices[0]?.message?.content ||
-      'Session completed successfully.'
+    const summary = summaryResult.content || 'Session completed successfully.'
 
     // ============================================
     // 12. СОХРАНИТЬ SUMMARY В СЕССИИ

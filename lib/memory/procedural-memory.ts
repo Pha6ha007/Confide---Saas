@@ -13,7 +13,7 @@
  * agent prompts to adapt their behavior per user.
  */
 
-import { ChatOpenAI } from '@langchain/openai'
+import { callProcedural } from '@/lib/ai/router'
 
 export interface ProceduralLessons {
   effectivePatterns: string[]
@@ -42,12 +42,6 @@ export async function extractProceduralLessons(
 ): Promise<ProceduralLessons | null> {
   if (messages.length < 4) return null // Need enough conversation to analyze
 
-  const llm = new ChatOpenAI({
-    model: 'gpt-4o-mini',
-    temperature: 0,
-    maxTokens: 300,
-  })
-
   // Build conversation text (limit to last 20 messages for cost)
   const conversationText = messages
     .slice(-20)
@@ -55,7 +49,7 @@ export async function extractProceduralLessons(
     .join('\n')
 
   try {
-    const response = await llm.invoke([
+    const result = await callProcedural([
       {
         role: 'system',
         content: `You are analyzing a therapy conversation to extract procedural communication lessons.
@@ -90,9 +84,7 @@ Rules:
       },
     ])
 
-    const content = typeof response.content === 'string'
-      ? response.content.trim()
-      : ''
+    const content = result.content.trim()
 
     if (!content) return null
 

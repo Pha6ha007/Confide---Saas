@@ -1,25 +1,14 @@
-import OpenAI from 'openai'
+import { getEmbeddingClient, callQueryExpansion } from '@/lib/ai/router'
+import { EMBEDDING_MODEL } from '@/lib/ai/models'
 import { getPineconeIndex, type Namespace } from './client'
 import { NAMESPACES } from './constants'
 import { rerankChunks, type RetrievedChunk, type RerankedChunk } from './reranker'
 
-// Lazy initialization - создаём клиент только при первом обращении
-let _openai: OpenAI | null = null
+// Centralized embedding client (OpenAI direct)
+function getOpenAIClient() { return getEmbeddingClient() }
 
-function getOpenAIClient() {
-  if (!_openai) {
-    _openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY!,
-    })
-  }
-  return _openai
-}
-
-// Модель для embeddings
-const EMBEDDING_MODEL = 'text-embedding-3-small'
-
-// Модель для query expansion (быстрая и дешёвая)
-const EXPANSION_MODEL = 'gpt-4o-mini'
+// Модель для embeddings (from centralized config)
+const EMBEDDING_MODEL_NAME = EMBEDDING_MODEL
 
 // Re-export types for consumers
 export type { RetrievedChunk, RerankedChunk }
@@ -33,7 +22,6 @@ export type { RetrievedChunk, RerankedChunk }
  * @returns Расширенный запрос с ключевыми словами и концепциями
  */
 async function expandQuery(userQuery: string, namespace: Namespace): Promise<string> {
-  const openai = getOpenAIClient()
 
   // Контекстно-зависимые подсказки по namespace
   const namespaceContext: Record<Namespace, string> = {
@@ -78,17 +66,12 @@ Input: "My relationship is falling apart"
 Output: relationship conflict marriage problems communication breakdown emotional disconnection attachment insecurity criticism contempt defensiveness stonewalling Gottman method couples therapy intimacy trust issues emotional availability vulnerability connection repair attempts love languages`
 
   try {
-    const response = await openai.chat.completions.create({
-      model: EXPANSION_MODEL,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userQuery },
-      ],
-      temperature: 0.7,
-      max_tokens: 150,
-    })
+    const result = await callQueryExpansion([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userQuery },
+    ])
 
-    const expandedQuery = response.choices[0]?.message?.content?.trim() || userQuery
+    const expandedQuery = result.content.trim() || userQuery
 
     // Fallback: если модель вернула пустой ответ, использовать оригинальный запрос
     return expandedQuery.length > 0 ? expandedQuery : userQuery
@@ -139,7 +122,7 @@ export async function retrieveContext(
     // 2. Создать embedding расширенного запроса через OpenAI
     const openai = getOpenAIClient()
     const embeddingResponse = await openai.embeddings.create({
-      model: EMBEDDING_MODEL,
+      model: EMBEDDING_MODEL_NAME,
       input: expandedQuery,
     })
 

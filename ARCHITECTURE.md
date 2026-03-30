@@ -51,7 +51,13 @@
 
 ### ✅ Phase 1 — MVP Core
 - Supabase Auth (email/password + Google OAuth)
-- AI Core: Groq API (dev) → GPT-4o (prod)
+- **AI Router:** OpenRouter gateway (300+ models, automatic fallback)
+  - Chat: MiniMax M2-her (Free) / M2.7 (Pro) / Claude Sonnet 4 (Premium)
+  - Memory/Summary: MiniMax M2.7 → Gemini Flash → GPT-4o-mini fallback
+  - RAG Reranking: DeepSeek V3 → GPT-4o-mini fallback
+  - Diary: Claude Sonnet 4 (literary quality)
+  - Embeddings: OpenAI text-embedding-3-small (direct)
+  - Whisper: Groq whisper-large-v3-turbo (direct)
 - RAG System: 1,634 chunks в Pinecone (43 книги)
 - 6 specialized agents + Orchestrator routing
 - Memory system (3-layer: short-term, long-term JSON, semantic)

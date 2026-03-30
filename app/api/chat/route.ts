@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { openai, getModel } from '@/lib/openai/client'
+import { callChat } from '@/lib/ai/router'
 import { textToSpeech, textToSpeechStream } from '@/lib/elevenlabs/client'
 import {
   buildAnxietyPrompt,
@@ -448,19 +448,23 @@ CRITICAL REMINDER — FOLLOW THESE OR THE RESPONSE FAILS:
       + enforcedRules
 
     // FIX: Передаём conversation history как отдельные messages для лучшего качества
-    const completion = await openai.chat.completions.create({
-      model: getModel(),
-      messages: [
+    // AI Router: модель выбирается автоматически по плану пользователя
+    // с fallback chain при ошибках (429, 500, timeout)
+    const chatResult = await callChat(
+      dbUser.plan as 'free' | 'pro' | 'premium',
+      [
         { role: 'system', content: finalSystemPrompt },
         ...messageHistory, // История разговора как отдельные messages
         { role: 'user', content: userMessage },
-      ],
-      temperature: 0.7,
-      max_tokens: 200, // Сокращено с 500 до 200 для более коротких ответов (≈3-4 предложения)
-    })
+      ]
+    )
 
-    const assistantMessage = completion.choices[0]?.message?.content ||
-      'I apologize, but I had trouble generating a response. Could you try again?'
+    const assistantMessage = chatResult.content
+
+    // Log model usage for monitoring
+    if (chatResult.fallbackUsed) {
+      console.warn(`[Chat] Fallback used: ${chatResult.model} for user ${user.id}`)
+    }
 
     // ============================================
     // 12.5. SAFETY CHECK — log potentially problematic responses

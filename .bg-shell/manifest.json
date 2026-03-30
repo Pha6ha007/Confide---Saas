@@ -1,16 +1,1 @@
-[
-  {
-    "id": "d437b8ed",
-    "label": "Next.js dev",
-    "command": "cd /Users/pavelgayvoronskiy/Documents/Confide\\ Saas && npx next dev 2>&1",
-    "cwd": "/Users/pavelgayvoronskiy/Documents/Confide Saas",
-    "ownerSessionFile": "/Users/pavelgayvoronskiy/.gsd/sessions/--Users-pavelgayvoronskiy-Documents-Confide Saas--/2026-03-24T10-44-08-792Z_a4cef8c0-1138-419b-be4c-8f6068770277.jsonl",
-    "persistAcrossSessions": false,
-    "startedAt": 1774370253071,
-    "processType": "server",
-    "group": null,
-    "readyPattern": null,
-    "readyPort": 3000,
-    "pid": 45736
-  }
-]
+[]

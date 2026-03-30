@@ -15,20 +15,13 @@
  *   "scared of heights" → later "overcame fear of heights" → old fact auto-replaced
  */
 
-import OpenAI from 'openai'
+import { getEmbeddingClient, callDedup } from '@/lib/ai/router'
+import { EMBEDDING_MODEL } from '@/lib/ai/models'
 import { getPineconeIndex } from '@/lib/pinecone/client'
 import { NAMESPACES } from '@/lib/pinecone/constants'
 
-// Lazy OpenAI client
-let _openai: OpenAI | null = null
-function getOpenAI(): OpenAI {
-  if (!_openai) {
-    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
-  }
-  return _openai
-}
-
-const EMBEDDING_MODEL = 'text-embedding-3-small'
+// Centralized embedding client (OpenAI direct — not via OpenRouter)
+function getOpenAI() { return getEmbeddingClient() }
 const SIMILARITY_THRESHOLD = 0.85 // Above this = potential duplicate
 const NAMESPACE = NAMESPACES.USER_MEMORIES
 
@@ -241,14 +234,10 @@ async function classifyMemoryAction(
   existingFact: string,
   newFact: string
 ): Promise<ClassifyResult> {
-  const openai = getOpenAI()
-
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      {
-        role: 'system',
-        content: `You are a memory deduplication classifier for a mental health support app.
+  const result = await callDedup([
+    {
+      role: 'system',
+      content: `You are a memory deduplication classifier for a mental health support app.
 
 Given an EXISTING memory and a NEW fact about the same user, decide:
 
@@ -262,17 +251,14 @@ Given an EXISTING memory and a NEW fact about the same user, decide:
   → NOOP
 
 Respond ONLY with valid JSON: {"action": "UPDATE", "mergedText": "..."} or {"action": "NOOP"}`,
-      },
-      {
-        role: 'user',
-        content: `EXISTING: "${existingFact}"\nNEW: "${newFact}"`,
-      },
-    ],
-    temperature: 0,
-    max_tokens: 200,
-  })
+    },
+    {
+      role: 'user',
+      content: `EXISTING: "${existingFact}"\nNEW: "${newFact}"`,
+    },
+  ])
 
-  const content = response.choices[0]?.message?.content?.trim()
+  const content = result.content.trim()
   if (!content) return { action: 'NOOP' }
 
   try {
@@ -283,7 +269,6 @@ Respond ONLY with valid JSON: {"action": "UPDATE", "mergedText": "..."} or {"act
       mergedText: parsed.mergedText,
     }
   } catch {
-    // If parsing fails, default to NOOP (safer than creating duplicates)
     return { action: 'NOOP' }
   }
 }

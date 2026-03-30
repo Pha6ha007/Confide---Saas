@@ -14,6 +14,7 @@
 | [2026-03-24.md](./2026-03-24.md) | 24 марта | **Миграция Paddle → Dodo Payments** — новый Merchant of Record, redirect checkout, HMAC webhook, Prisma migration |
 | [2026-03-25.md](./2026-03-25.md) | 25 марта | **Dodo Payments Live Mode** — переключение с test_mode на live_mode, реальные платежи активны |
 | [2026-03-27.md](./2026-03-27.md) | 27 марта | **Security Hardening** — RLS на всех таблицах, security headers (CSP/HSTS), IP rate limiting, error masking, Zod validation, GitHub CI (Dependabot + CodeQL + Security CI) |
+| [2026-03-30.md](./2026-03-30.md) | 30 марта | **OpenRouter AI Gateway** — полный рефакторинг AI инфраструктуры: multi-model architecture с fallback chains, MiniMax M2-her/M2.7 для чата, Claude Sonnet 4 для Premium, DeepSeek V3 для RAG, экономия ~8.5x |
 
 ## Формат записи
 

@@ -5,7 +5,7 @@
  * that's small (15-30 min), relevant to the discussion, and warm in tone.
  */
 
-import { openai, getModel } from '@/lib/openai/client'
+import { callHomework } from '@/lib/ai/router'
 
 export interface GeneratedHomework {
   title: string
@@ -86,15 +86,12 @@ Examples:
   "category": "mindfulness"
 }`
 
-    // Call LLM
-    const completion = await openai.chat.completions.create({
-      model: getModel(),
-      messages: [{ role: 'system', content: systemPrompt }],
-      temperature: 0.7,
-      max_tokens: 200,
-    })
+    // Call LLM via AI Router (MiniMax M2.7 for warm practical tone)
+    const result = await callHomework(
+      [{ role: 'system', content: systemPrompt }]
+    )
 
-    const responseText = completion.choices[0]?.message?.content?.trim()
+    const responseText = result.content.trim()
 
     if (!responseText) {
       throw new Error('Empty response from LLM')

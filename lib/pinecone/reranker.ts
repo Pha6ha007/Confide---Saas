@@ -1,19 +1,4 @@
-import OpenAI from 'openai'
-
-// Lazy initialization
-let _openai: OpenAI | null = null
-
-function getOpenAIClient() {
-  if (!_openai) {
-    _openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY!,
-    })
-  }
-  return _openai
-}
-
-// Модель для reranking (быстрая и дешёвая)
-const RERANKING_MODEL = 'gpt-4o-mini'
+import { callReranking } from '@/lib/ai/router'
 
 // Define types locally to avoid circular dependency
 export interface RetrievedChunk {
@@ -62,8 +47,6 @@ export async function rerankChunks(
   }
 
   try {
-    const openai = getOpenAIClient()
-
     // Подготовить chunks для LLM оценки
     const chunksForEvaluation = chunks
       .map((chunk, idx) => {
@@ -106,17 +89,12 @@ ${chunksForEvaluation}
 
 Return JSON array of top ${topN} chunks sorted by relevance score (highest first).`
 
-    const response = await openai.chat.completions.create({
-      model: RERANKING_MODEL,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.3, // Low temperature for consistent scoring
-      response_format: { type: 'json_object' },
-    })
+    const result = await callReranking([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ])
 
-    const responseText = response.choices[0]?.message?.content?.trim()
+    const responseText = result.content.trim()
     if (!responseText) {
       console.warn('[Reranker] Empty response from LLM, falling back to original order')
       return chunks.slice(0, topN).map((chunk) => ({

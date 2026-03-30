@@ -1,7 +1,7 @@
 // Confide Diary — AI Month Summary Generator
 // Generates personalized month summaries using LLM based on session data
 
-import { openai, getModel, getProviderInfo } from '@/lib/openai/client';
+import { callDiary, getProviderInfo } from '@/lib/ai/router';
 import { MonthSummary } from '@/types';
 
 // ============================================
@@ -46,7 +46,8 @@ export async function generateMonthSummary(
   userProfile?: UserProfileInput
 ): Promise<MonthSummary> {
   try {
-    console.log(`[MONTH_SUMMARY] Generating with ${getProviderInfo().provider} (${getModel()})`);
+    const providerInfo = getProviderInfo();
+    console.log(`[MONTH_SUMMARY] Generating with ${providerInfo.provider} (${providerInfo.diaryModel})`);
 
     // Build context from sessions
     const sessionContext = sessions
@@ -99,18 +100,13 @@ Session summaries:
 ${sessionContext}
     `.trim();
 
-    // Call LLM
-    const response = await openai.chat.completions.create({
-      model: getModel(),
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: 500,
-      temperature: 0.7,
-    });
+    // Call LLM via AI Router (Claude Sonnet for literary quality)
+    const result = await callDiary([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ]);
 
-    const content = response.choices[0]?.message?.content?.trim();
+    const content = result.content.trim();
 
     if (!content) {
       throw new Error('Empty response from LLM');

@@ -1,46 +1,21 @@
-import OpenAI from 'openai'
-
 /**
- * Универсальный AI клиент для Groq или OpenAI
+ * @deprecated — Use lib/ai/router.ts instead.
  *
- * Приоритет:
- * 1. Если есть GROQ_API_KEY → использует Groq (бесплатно для разработки)
- * 2. Если есть OPENAI_API_KEY → использует OpenAI
+ * This file is kept for backwards compatibility only.
+ * All AI calls now go through OpenRouter via lib/ai/router.ts
+ * with automatic model selection and fallback chains.
  *
- * Groq совместим с OpenAI SDK — меняется только baseURL
+ * Migration (March 2026):
+ * - lib/ai/router.ts — callChat(), callMemory(), callReranking(), etc.
+ * - lib/ai/models.ts — all model definitions and fallback chains
+ * - Embeddings: getEmbeddingClient() (OpenAI direct)
+ * - Whisper: getWhisperClient() (Groq direct)
  */
 
-const useGroq = !!process.env.GROQ_API_KEY
-const apiKey = useGroq ? process.env.GROQ_API_KEY : process.env.OPENAI_API_KEY
+// Re-export from new location for any remaining references
+export { getEmbeddingClient as openai } from '@/lib/ai/router'
+export { getProviderInfo } from '@/lib/ai/router'
 
-if (!apiKey) {
-  throw new Error(
-    'Missing AI API key. Set either GROQ_API_KEY or OPENAI_API_KEY in .env.local'
-  )
-}
-
-export const openai = new OpenAI({
-  apiKey,
-  baseURL: useGroq ? 'https://api.groq.com/openai/v1' : undefined,
-})
-
-/**
- * Получить название модели из env или использовать дефолтную
- */
 export function getModel(): string {
-  if (useGroq) {
-    return process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'
-  }
-  return 'gpt-4o' // OpenAI default
-}
-
-/**
- * Для логирования какой провайдер используется
- */
-export function getProviderInfo() {
-  return {
-    provider: useGroq ? 'Groq' : 'OpenAI',
-    model: getModel(),
-    isGroq: useGroq,
-  }
+  return 'DEPRECATED — use lib/ai/router.ts'
 }

@@ -188,8 +188,8 @@ export default function LandingPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
-                <h3 className="font-serif text-xl font-semibold text-[#1F2937] mb-2">Evidence-Based</h3>
-                <p className="text-sm text-[#6B7280]">Grounded in proven conversation techniques</p>
+                <h3 className="font-serif text-xl font-semibold text-[#1F2937] mb-2">Powered by Advanced AI</h3>
+                <p className="text-sm text-[#6B7280]">Frontier AI with multi-provider reliability</p>
               </div>
 
               {/* Card 3 */}
@@ -710,6 +710,10 @@ export default function LandingPage() {
                 <ul className="space-y-4 mb-8">
                   <li className="flex items-start">
                     <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-[#4B5563]">Most advanced conversational AI</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-5 h-5 text-[#F59E0B] mr-3 flex-shrink-0 mt-0.5" />
                     <span className="text-[#4B5563]">Everything in Pro</span>
                   </li>
                   <li className="flex items-start">
@@ -929,6 +933,7 @@ export default function LandingPage() {
               <Link href="/privacy" className="hover:text-[#6366F1] transition-smooth">Privacy</Link>
               <Link href="/terms" className="hover:text-[#6366F1] transition-smooth">Terms</Link>
               <Link href="/refund" className="hover:text-[#6366F1] transition-smooth">Refund</Link>
+              <Link href="/about" className="hover:text-[#6366F1] transition-smooth">About</Link>
               <Link href="/contact" className="hover:text-[#6366F1] transition-smooth">Contact</Link>
             </div>
           </div>

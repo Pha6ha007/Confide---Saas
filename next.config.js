@@ -73,7 +73,7 @@ const nextConfig = {
               "img-src 'self' data: blob: https:",
               "media-src 'self' blob: https:",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.openai.com https://api.elevenlabs.io https://api.posthog.com https://*.dodopayments.com",
-              "frame-ancestors 'none'",
+              "frame-ancestors *",
               "base-uri 'self'",
               "form-action 'self'",
             ].join('; '),
